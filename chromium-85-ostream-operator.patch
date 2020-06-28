@@ -1,0 +1,26 @@
+From 6354fb5c792d872b969feabaafbfdbea85a16a37 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Mon, 15 Jun 2020 18:54:36 +0000
+Subject: [PATCH] GCC: fix operator<< for
+ performance_manager::PageNode::OpenedType
+
+GCC requires reference type operand.
+---
+ components/performance_manager/public/graph/page_node.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/components/performance_manager/public/graph/page_node.h b/components/performance_manager/public/graph/page_node.h
+index 422c043..b3aea55 100644
+--- a/components/performance_manager/public/graph/page_node.h
++++ b/components/performance_manager/public/graph/page_node.h
+@@ -269,6 +269,6 @@ class PageNode::ObserverDefaultImpl : public PageNodeObserver {
+ 
+ // std::ostream support for PageNode::OpenedType.
+ std::ostream& operator<<(std::ostream& os,
+-                         performance_manager::PageNode::OpenedType opened_type);
++                         performance_manager::PageNode::OpenedType &opened_type);
+ 
+ #endif  // COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_GRAPH_PAGE_NODE_H_
+-- 
+2.26.2
+
