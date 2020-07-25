@@ -1,0 +1,51 @@
+From 7843ec6c42fee9916644fb0511aa6c3a983e94a8 Mon Sep 17 00:00:00 2001
+From: Jose Dapena Paz <jdapena@igalia.com>
+Date: Thu, 16 Jul 2020 20:40:37 +0200
+Subject: [PATCH] GCC: avoid WTF vector backed linked list template specialization
+
+GCC refuses to compile the recently added ConstructAndNotifyElementImpl
+Construct method, that gets a template specialization inside the struct
+namespace. This is not working in GCC.
+
+To avoid that, we avoid the template specialization.
+
+Bug: 819294
+Change-Id: Ibd88999c2667b1130c0132864ec692b1e0a8fbc6
+---
+
+diff --git a/third_party/blink/renderer/platform/wtf/vector_backed_linked_list.h b/third_party/blink/renderer/platform/wtf/vector_backed_linked_list.h
+index 98a688f..830d7e5 100644
+--- a/third_party/blink/renderer/platform/wtf/vector_backed_linked_list.h
++++ b/third_party/blink/renderer/platform/wtf/vector_backed_linked_list.h
+@@ -107,7 +107,7 @@
+ 
+   template <typename... Args>
+   static Node* ConstructAndNotifyElement(void* location, Args&&... args) {
+-    Node* object = ConstructAndNotifyElementImpl<>::Construct(
++    Node* object = ConstructAndNotifyElementImpl::Construct(
+         location, std::forward<Args>(args)...);
+     NotifyNewElement(object);
+     return object;
+@@ -118,18 +118,17 @@
+   }
+ 
+  private:
+-  template <bool = Allocator::kIsGarbageCollected>
+   struct ConstructAndNotifyElementImpl {
+     template <typename... Args>
+     static Node* Construct(void* location, Args&&... args) {
+       return ConstructTraits<Node, Traits, Allocator>::Construct(
+           location, std::forward<Args>(args)...);
+     }
+-  };
+-
+-  template <>
+-  struct ConstructAndNotifyElementImpl<true> {
+     static Node* Construct(void* location, Node&& element) {
++      if (!Allocator::kIsGarbageCollected) {
++        return ConstructTraits<Node, Traits, Allocator>::Construct(location,
++                                                                   element);
++      }
+       // ConstructAndNotifyElement updates an existing node which might
+       // also be concurrently traced while we update it. The regular ctors
+       // don't use an atomic write which can lead to data races.
