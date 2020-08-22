@@ -1,0 +1,45 @@
+From e2081af8e525ecbb47e7867eabe6167a4e4960a3 Mon Sep 17 00:00:00 2001
+From: Jose Dapena Paz <jdapena@igalia.com>
+Date: Thu, 20 Aug 2020 15:59:15 +0000
+Subject: [PATCH] GCC: avoid template specialization in non namespace scope in blink::MemberBase
+
+Fix this error in GCC compilation:
+../../third_party/blink/renderer/platform/heap/member.h:251:13: error: explicit specialization in non-namespace scope ‘class blink::MemberBase<T, tracenessConfiguration>’
+  251 |   template <>
+      |             ^
+../../third_party/blink/renderer/platform/heap/member.h:252:76: error: template-id ‘SetRaw<blink::TracenessMemberConfiguration::kUntraced>’ in declaration of primary template
+  252 |   ALWAYS_INLINE void SetRaw<TracenessMemberConfiguration::kUntraced>(T* raw) {
+
+To avoid it we change SetRaw to not be a template method, and just check
+the traceness configuration. The generated code should be the same.
+
+Bug: 819294
+Change-Id: Ia03d7842918bd091beaf966caa3af5e8c647cd76
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2360020
+Reviewed-by: Anton Bikineev <bikineev@chromium.org>
+Commit-Queue: José Dapena Paz <jdapena@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#800153}
+---
+
+diff --git a/third_party/blink/renderer/platform/heap/member.h b/third_party/blink/renderer/platform/heap/member.h
+index b62541f..6567c77 100644
+--- a/third_party/blink/renderer/platform/heap/member.h
++++ b/third_party/blink/renderer/platform/heap/member.h
+@@ -244,13 +244,11 @@
+ #endif  // DCHECK_IS_ON()
+   }
+ 
+-  template <TracenessMemberConfiguration = tracenessConfiguration>
+   ALWAYS_INLINE void SetRaw(T* raw) {
+-    WTF::AsAtomicPtr(&raw_)->store(raw, std::memory_order_relaxed);
+-  }
+-  template <>
+-  ALWAYS_INLINE void SetRaw<TracenessMemberConfiguration::kUntraced>(T* raw) {
+-    raw_ = raw;
++    if (tracenessConfiguration == TracenessMemberConfiguration::kUntraced)
++      raw_ = raw;
++    else
++      WTF::AsAtomicPtr(&raw_)->store(raw, std::memory_order_relaxed);
+   }
+   ALWAYS_INLINE T* GetRaw() const { return raw_; }
+ 
