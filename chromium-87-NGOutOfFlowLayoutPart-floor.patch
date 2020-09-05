@@ -1,0 +1,26 @@
+From c604d421ba8aebe8b7769a5084c849122d076e43 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Fri, 4 Sep 2020 11:03:14 +0000
+Subject: [PATCH] libstdc++: remove namespace std from floorf
+
+libstdc++ does not define floorf in namespace std.
+---
+ .../blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.cc b/third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.cc
+index b1bca4e..255ea8a 100644
+--- a/third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.cc
++++ b/third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.cc
+@@ -1233,7 +1233,7 @@ void NGOutOfFlowLayoutPart::ComputeStartFragmentIndexAndRelativeOffset(
+   }
+ 
+   wtf_size_t additional_fragment_count =
+-      int(std::floorf(remaining_block_offset / fragmentainer_block_size));
++      int(floorf(remaining_block_offset / fragmentainer_block_size));
+   *start_index = child_index + additional_fragment_count;
+   offset->block_offset = remaining_block_offset -
+                          additional_fragment_count * fragmentainer_block_size;
+-- 
+2.26.2
+
