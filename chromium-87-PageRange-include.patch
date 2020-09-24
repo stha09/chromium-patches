@@ -1,0 +1,24 @@
+From 6e7766360a31433a7c65e108163804e446d6ab34 Mon Sep 17 00:00:00 2001
+From: Jose Dapena Paz <jdapena@igalia.com>
+Date: Tue, 22 Sep 2020 13:32:04 +0200
+Subject: [PATCH] IWYU: uint32_t requires stdint.h include in printing PageRange.
+
+Fix this error:
+../../printing/page_range.h:20:3: error: ‘uint32_t’ does not name a type
+
+Bug: 951519
+Change-Id: I0c86cfc5dc711b062021dd8661d27d6442e7d47d
+---
+
+diff --git a/printing/page_range.h b/printing/page_range.h
+index 0d262a6..d935fd7 100644
+--- a/printing/page_range.h
++++ b/printing/page_range.h
+@@ -5,6 +5,7 @@
+ #ifndef PRINTING_PAGE_RANGE_H_
+ #define PRINTING_PAGE_RANGE_H_
+ 
++#include <stdint.h>
+ #include <vector>
+ 
+ #include "printing/printing_export.h"

@@ -1,0 +1,43 @@
+From 1e0683735e26c6fcecb0977e0cdae5da2eaf7c84 Mon Sep 17 00:00:00 2001
+From: Jose Dapena Paz <jdapena@igalia.com>
+Date: Tue, 22 Sep 2020 13:18:55 +0200
+Subject: [PATCH] libstdc++: use max_align_t without std prefix in partition alloc constants.
+
+Using std::max_align_t would require using cstddef instead of stddef.h. As
+partition alloc constants is including stddef.h, let's remove the std::
+namespace prefix.
+
+This fixes this error building with libstdc++
+../../base/allocator/partition_allocator/partition_alloc_constants.h:200:51: error: ‘max_align_t’ is not a member of ‘std’; did you mean ‘max_align_t’?
+
+Bug: 957519
+Change-Id: I72b22428937e7b7b1e6bb31fb0ac0bef3b72c581
+
+(Adjusted to work with clang too)
+---
+
+diff --git a/base/allocator/partition_allocator/partition_alloc_constants.h b/base/allocator/partition_allocator/partition_alloc_constants.h
+index 0c74dbe..ef1488f 100644
+--- a/base/allocator/partition_allocator/partition_alloc_constants.h
++++ b/base/allocator/partition_allocator/partition_alloc_constants.h
+@@ -183,7 +183,7 @@ NumPartitionPagesPerSuperPage() {
+ }
+ 
+ // Alignment has two constraints:
+-// - Alignment requirement for scalar types: alignof(std::max_align_t)
++// - Alignment requirement for scalar types: alignof(max_align_t)
+ // - Alignment requirement for operator new().
+ //
+ // The two are separate on Windows 64 bits, where the first one is 8 bytes, and
+@@ -195,9 +195,9 @@ NumPartitionPagesPerSuperPage() {
+ // platforms, as Chrome's requirement is C++14 as of 2020.
+ #if defined(__STDCPP_DEFAULT_NEW_ALIGNMENT__)
+ static constexpr size_t kAlignment =
+-    std::max(alignof(std::max_align_t), __STDCPP_DEFAULT_NEW_ALIGNMENT__);
++    std::max(alignof(max_align_t), __STDCPP_DEFAULT_NEW_ALIGNMENT__);
+ #else
+-static constexpr size_t kAlignment = alignof(std::max_align_t);
++static constexpr size_t kAlignment = alignof(max_align_t);
+ #endif
+ static_assert(kAlignment <= 16,
+               "PartitionAlloc doesn't support a fundamental alignment larger "
