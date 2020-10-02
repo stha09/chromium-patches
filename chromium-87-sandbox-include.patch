@@ -1,0 +1,29 @@
+From 7b52657bea15b7b0c0a14e4cbe69487fe4c79216 Mon Sep 17 00:00:00 2001
+From: Piotr Tworek <ptworek@vewd.com>
+Date: Thu, 01 Oct 2020 14:43:38 +0000
+Subject: [PATCH] Add missing string.h include in remote_syscall_arg_handler.cc
+
+This was exposed when building code against libstdc++ instead of bundled
+libcxx. The code uses memchr function, but fails to include string.h
+declaring it. My guess is libcxx somehow pulls this indirectly for us.
+
+Bug: 957519
+Change-Id: If9b1253bf0c78a2784a74839dc11291de2490113
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2440617
+Reviewed-by: Robert Sesek <rsesek@chromium.org>
+Commit-Queue: Piotr Tworek <ptworek@vewd.com>
+Cr-Commit-Position: refs/heads/master@{#812680}
+---
+
+diff --git a/sandbox/linux/syscall_broker/remote_syscall_arg_handler.cc b/sandbox/linux/syscall_broker/remote_syscall_arg_handler.cc
+index 642427b..f73113c 100644
+--- a/sandbox/linux/syscall_broker/remote_syscall_arg_handler.cc
++++ b/sandbox/linux/syscall_broker/remote_syscall_arg_handler.cc
+@@ -4,6 +4,7 @@
+ 
+ #include "sandbox/linux/syscall_broker/remote_syscall_arg_handler.h"
+ 
++#include <string.h>
+ #include <sys/ioctl.h>
+ #include <sys/syscall.h>
+ #include <sys/types.h>
