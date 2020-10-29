@@ -1,0 +1,413 @@
+From 870daa7731daa5fb2ab31189656aaffacb9b9dda Mon Sep 17 00:00:00 2001
+From: Jose Dapena Paz <jdapena@igalia.com>
+Date: Tue, 06 Oct 2020 18:18:36 +0200
+Subject: [PATCH] GCC: move views factory template macros out of views namespace.
+
+GCC fails to compile macro END_VIEW_BUILDER in view factory, as its
+declaration of template specialization is adding views namespace. To avoid
+the problem, move the VIEW_BUILDER macros out of views namespace in all
+the codebase, and add internally the namespace.
+
+Bug: 819294
+Change-Id: Ie400b73ab46cb0c8843840fc3c055f3c185b0e41
+
+(rebased for chromium-88.0.4300.0)
+---
+
+diff --git a/chrome/browser/ui/views/find_bar_view.cc b/chrome/browser/ui/views/find_bar_view.cc
+index 07dfc25..d26faa1 100644
+--- a/chrome/browser/ui/views/find_bar_view.cc
++++ b/chrome/browser/ui/views/find_bar_view.cc
+@@ -118,7 +118,7 @@
+   DISALLOW_COPY_AND_ASSIGN(FindBarMatchCountLabel);
+ };
+ 
+-BEGIN_VIEW_BUILDER(/* No Export */, FindBarMatchCountLabel, views::Label)
++BEGIN_VIEW_BUILDER(/* No Export */, FindBarMatchCountLabel, Label)
+ END_VIEW_BUILDER(/* No Export */, FindBarMatchCountLabel)
+ 
+ BEGIN_METADATA(FindBarMatchCountLabel, views::Label)
+diff --git a/chrome/browser/ui/views/find_bar_view.h b/chrome/browser/ui/views/find_bar_view.h
+index bb88f050..698def6 100644
+--- a/chrome/browser/ui/views/find_bar_view.h
++++ b/chrome/browser/ui/views/find_bar_view.h
+@@ -122,7 +122,7 @@
+   DISALLOW_COPY_AND_ASSIGN(FindBarView);
+ };
+ 
+-BEGIN_VIEW_BUILDER(/* no export */, FindBarView, views::View)
++BEGIN_VIEW_BUILDER(/* no export */, FindBarView, View)
+ VIEW_BUILDER_PROPERTY(FindBarHost*, Host)
+ END_VIEW_BUILDER(/* no export */, FindBarView)
+ 
+diff --git a/chrome/browser/ui/views/toolbar/toolbar_button.h b/chrome/browser/ui/views/toolbar/toolbar_button.h
+index 4208da08..d34af53 100644
+--- a/chrome/browser/ui/views/toolbar/toolbar_button.h
++++ b/chrome/browser/ui/views/toolbar/toolbar_button.h
+@@ -289,7 +289,7 @@
+   base::WeakPtrFactory<ToolbarButton> show_menu_factory_{this};
+ };
+ 
+-BEGIN_VIEW_BUILDER(CHROME_VIEWS_EXPORT, ToolbarButton, views::LabelButton)
++BEGIN_VIEW_BUILDER(CHROME_VIEWS_EXPORT, ToolbarButton, LabelButton)
+ VIEW_BUILDER_PROPERTY(gfx::Insets, LayoutInsets)
+ END_VIEW_BUILDER(CHROME_VIEWS_EXPORT, ToolbarButton)
+ 
+diff --git a/ui/views/animation/ink_drop_host_view.h b/ui/views/animation/ink_drop_host_view.h
+index 7a6dda9..e571e62 100644
+--- a/ui/views/animation/ink_drop_host_view.h
++++ b/ui/views/animation/ink_drop_host_view.h
+@@ -247,6 +247,8 @@
+   DISALLOW_COPY_AND_ASSIGN(InkDropHostView);
+ };
+ 
++}  // namespace views
++
+ BEGIN_VIEW_BUILDER(VIEWS_EXPORT, InkDropHostView, View)
+ VIEW_BUILDER_PROPERTY(base::Optional<float>, InkDropHighlightOpacity)
+ VIEW_BUILDER_PROPERTY(int, InkDropLargeCornerRadius)
+@@ -255,6 +257,4 @@
+ VIEW_BUILDER_PROPERTY(float, InkDropVisibleOpacity)
+ END_VIEW_BUILDER(VIEWS_EXPORT, InkDropHostView)
+ 
+-}  // namespace views
+-
+ #endif  // UI_VIEWS_ANIMATION_INK_DROP_HOST_VIEW_H_
+diff --git a/ui/views/controls/button/button.h b/ui/views/controls/button/button.h
+index 77a34d3..7fb61d3 100644
+--- a/ui/views/controls/button/button.h
++++ b/ui/views/controls/button/button.h
+@@ -380,6 +380,8 @@
+   DISALLOW_COPY_AND_ASSIGN(Button);
+ };
+ 
++}  // namespace views
++
+ BEGIN_VIEW_BUILDER(VIEWS_EXPORT, Button, InkDropHostView)
+ VIEW_BUILDER_PROPERTY(base::string16, AccessibleName)
+ VIEW_BUILDER_PROPERTY(base::TimeDelta, AnimationDuration)
+@@ -395,6 +397,4 @@
+ VIEW_BUILDER_METHOD(SetFocusForPlatform)
+ END_VIEW_BUILDER(VIEWS_EXPORT, Button)
+ 
+-}  // namespace views
+-
+ #endif  // UI_VIEWS_CONTROLS_BUTTON_BUTTON_H_
+diff --git a/ui/views/controls/button/image_button.h b/ui/views/controls/button/image_button.h
+index 6aa6616..ba3f2e0 100644
+--- a/ui/views/controls/button/image_button.h
++++ b/ui/views/controls/button/image_button.h
+@@ -112,14 +112,6 @@
+   DISALLOW_COPY_AND_ASSIGN(ImageButton);
+ };
+ 
+-BEGIN_VIEW_BUILDER(VIEWS_EXPORT, ImageButton, Button)
+-VIEW_BUILDER_PROPERTY(bool, DrawImageMirrored)
+-VIEW_BUILDER_PROPERTY(ImageButton::HorizontalAlignment,
+-                      ImageHorizontalAlignment)
+-VIEW_BUILDER_PROPERTY(ImageButton::VerticalAlignment, ImageVerticalAlignment)
+-VIEW_BUILDER_PROPERTY(gfx::Size, MinimumImageSize)
+-END_VIEW_BUILDER(VIEWS_EXPORT, ImageButton)
+-
+ ////////////////////////////////////////////////////////////////////////////////
+ //
+ // ToggleImageButton
+@@ -180,12 +172,20 @@
+   DISALLOW_COPY_AND_ASSIGN(ToggleImageButton);
+ };
+ 
++}  // namespace views
++
++BEGIN_VIEW_BUILDER(VIEWS_EXPORT, ImageButton, Button)
++VIEW_BUILDER_PROPERTY(bool, DrawImageMirrored)
++VIEW_BUILDER_PROPERTY(ImageButton::HorizontalAlignment,
++                      ImageHorizontalAlignment)
++VIEW_BUILDER_PROPERTY(ImageButton::VerticalAlignment, ImageVerticalAlignment)
++VIEW_BUILDER_PROPERTY(gfx::Size, MinimumImageSize)
++END_VIEW_BUILDER(VIEWS_EXPORT, ImageButton)
++
+ BEGIN_VIEW_BUILDER(VIEWS_EXPORT, ToggleImageButton, ImageButton)
+ VIEW_BUILDER_PROPERTY(bool, Toggled)
+ VIEW_BUILDER_PROPERTY(base::string16, ToggledTooltipText)
+ VIEW_BUILDER_PROPERTY(base::string16, ToggledAccessibleName)
+ END_VIEW_BUILDER(VIEWS_EXPORT, ToggleImageButton)
+ 
+-}  // namespace views
+-
+ #endif  // UI_VIEWS_CONTROLS_BUTTON_IMAGE_BUTTON_H_
+diff --git a/ui/views/controls/button/label_button.h b/ui/views/controls/button/label_button.h
+index 4990f7e..d90164c 100644
+--- a/ui/views/controls/button/label_button.h
++++ b/ui/views/controls/button/label_button.h
+@@ -268,6 +268,8 @@
+   DISALLOW_COPY_AND_ASSIGN(LabelButton);
+ };
+ 
++}  // namespace views
++
+ BEGIN_VIEW_BUILDER(VIEWS_EXPORT, LabelButton, Button)
+ VIEW_BUILDER_PROPERTY(base::string16, Text)
+ VIEW_BUILDER_PROPERTY(gfx::HorizontalAlignment, HorizontalAlignment)
+@@ -278,6 +280,4 @@
+ VIEW_BUILDER_PROPERTY(bool, ImageCentered)
+ END_VIEW_BUILDER(VIEWS_EXPORT, LabelButton)
+ 
+-}  // namespace views
+-
+ #endif  // UI_VIEWS_CONTROLS_BUTTON_LABEL_BUTTON_H_
+diff --git a/ui/views/controls/button/md_text_button.h b/ui/views/controls/button/md_text_button.h
+index f1be12a..a5c77d4 100644
+--- a/ui/views/controls/button/md_text_button.h
++++ b/ui/views/controls/button/md_text_button.h
+@@ -81,6 +81,8 @@
+   DISALLOW_COPY_AND_ASSIGN(MdTextButton);
+ };
+ 
++}  // namespace views
++
+ BEGIN_VIEW_BUILDER(VIEWS_EXPORT, MdTextButton, LabelButton)
+ VIEW_BUILDER_PROPERTY(bool, Prominent)
+ VIEW_BUILDER_PROPERTY(base::Optional<SkColor>, BgColorOverride)
+@@ -88,6 +90,4 @@
+ VIEW_BUILDER_PROPERTY(base::Optional<gfx::Insets>, CustomPadding)
+ END_VIEW_BUILDER(VIEWS_EXPORT, MdTextButton)
+ 
+-}  // namespace views
+-
+ #endif  // UI_VIEWS_CONTROLS_BUTTON_MD_TEXT_BUTTON_H_
+diff --git a/ui/views/controls/combobox/combobox.h b/ui/views/controls/combobox/combobox.h
+index 515f7e9..2e038cc 100644
+--- a/ui/views/controls/combobox/combobox.h
++++ b/ui/views/controls/combobox/combobox.h
+@@ -229,6 +229,8 @@ class VIEWS_EXPORT Combobox : public View,
+   DISALLOW_COPY_AND_ASSIGN(Combobox);
+ };
+ 
++}  // namespace views
++
+ BEGIN_VIEW_BUILDER(VIEWS_EXPORT, Combobox, View)
+ VIEW_BUILDER_PROPERTY(base::RepeatingClosure, Callback)
+ VIEW_BUILDER_PROPERTY(std::unique_ptr<ui::ComboboxModel>, OwnedModel)
+@@ -240,6 +242,4 @@ VIEW_BUILDER_PROPERTY(base::string16, AccessibleName)
+ VIEW_BUILDER_PROPERTY(base::string16, TooltipTextAndAccessibleName)
+ END_VIEW_BUILDER(VIEWS_EXPORT, Combobox)
+ 
+-}  // namespace views
+-
+ #endif  // UI_VIEWS_CONTROLS_COMBOBOX_COMBOBOX_H_
+diff --git a/ui/views/controls/label.h b/ui/views/controls/label.h
+index f5b59c8..f1fd3915 100644
+--- a/ui/views/controls/label.h
++++ b/ui/views/controls/label.h
+@@ -443,6 +443,8 @@
+   DISALLOW_COPY_AND_ASSIGN(Label);
+ };
+ 
++}  // namespace views
++
+ BEGIN_VIEW_BUILDER(VIEWS_EXPORT, Label, View)
+ VIEW_BUILDER_PROPERTY(const gfx::FontList&, FontList)
+ VIEW_BUILDER_PROPERTY(const base::string16&, Text)
+@@ -470,6 +472,4 @@
+ VIEW_BUILDER_PROPERTY(bool, Selectable)
+ END_VIEW_BUILDER(VIEWS_EXPORT, Label)
+ 
+-}  // namespace views
+-
+ #endif  // UI_VIEWS_CONTROLS_LABEL_H_
+diff --git a/ui/views/controls/link.h b/ui/views/controls/link.h
+index 82a422b..0babee0 100644
+--- a/ui/views/controls/link.h
++++ b/ui/views/controls/link.h
+@@ -105,9 +105,9 @@
+   DISALLOW_COPY_AND_ASSIGN(Link);
+ };
+ 
++}  // namespace views
++
+ BEGIN_VIEW_BUILDER(VIEWS_EXPORT, Link, Label)
+ END_VIEW_BUILDER(VIEWS_EXPORT, Link)
+ 
+-}  // namespace views
+-
+ #endif  // UI_VIEWS_CONTROLS_LINK_H_
+diff --git a/ui/views/controls/scroll_view.h b/ui/views/controls/scroll_view.h
+index 690b2a4..eb4b60a 100644
+--- a/ui/views/controls/scroll_view.h
++++ b/ui/views/controls/scroll_view.h
+@@ -325,21 +325,6 @@
+   DISALLOW_COPY_AND_ASSIGN(ScrollView);
+ };
+ 
+-BEGIN_VIEW_BUILDER(VIEWS_EXPORT, ScrollView, View)
+-VIEW_BUILDER_VIEW_TYPE_PROPERTY(View, Contents)
+-VIEW_BUILDER_VIEW_TYPE_PROPERTY(View, Header)
+-VIEW_BUILDER_PROPERTY(base::Optional<ui::NativeTheme::ColorId>,
+-                      BackgroundThemeColorId)
+-VIEW_BUILDER_PROPERTY(ScrollView::ScrollBarMode, HorizontalScrollBarMode)
+-VIEW_BUILDER_PROPERTY(ScrollView::ScrollBarMode, VerticalScrollBarMode)
+-VIEW_BUILDER_PROPERTY(bool, TreatAllScrollEventsAsHorizontal)
+-VIEW_BUILDER_PROPERTY(bool, DrawOverflowIndicator)
+-VIEW_BUILDER_PROPERTY(base::Optional<SkColor>, BackgroundColor)
+-VIEW_BUILDER_VIEW_PROPERTY(ScrollBar, HorizontalScrollBar)
+-VIEW_BUILDER_VIEW_PROPERTY(ScrollBar, VerticalScrollBar)
+-VIEW_BUILDER_PROPERTY(bool, HasFocusIndicator)
+-END_VIEW_BUILDER(VIEWS_EXPORT, ScrollView)
+-
+ // VariableRowHeightScrollHelper is intended for views that contain rows of
+ // varying height. To use a VariableRowHeightScrollHelper create one supplying
+ // a Controller and delegate GetPageScrollIncrement and GetLineScrollIncrement
+@@ -414,4 +399,19 @@
+ 
+ }  // namespace views
+ 
++BEGIN_VIEW_BUILDER(VIEWS_EXPORT, ScrollView, View)
++VIEW_BUILDER_VIEW_TYPE_PROPERTY(View, Contents)
++VIEW_BUILDER_VIEW_TYPE_PROPERTY(View, Header)
++VIEW_BUILDER_PROPERTY(base::Optional<ui::NativeTheme::ColorId>,
++                      BackgroundThemeColorId)
++VIEW_BUILDER_PROPERTY(ScrollView::ScrollBarMode, HorizontalScrollBarMode)
++VIEW_BUILDER_PROPERTY(ScrollView::ScrollBarMode, VerticalScrollBarMode)
++VIEW_BUILDER_PROPERTY(bool, TreatAllScrollEventsAsHorizontal)
++VIEW_BUILDER_PROPERTY(bool, DrawOverflowIndicator)
++VIEW_BUILDER_PROPERTY(base::Optional<SkColor>, BackgroundColor)
++VIEW_BUILDER_VIEW_PROPERTY(ScrollBar, HorizontalScrollBar)
++VIEW_BUILDER_VIEW_PROPERTY(ScrollBar, VerticalScrollBar)
++VIEW_BUILDER_PROPERTY(bool, HasFocusIndicator)
++END_VIEW_BUILDER(VIEWS_EXPORT, ScrollView)
++
+ #endif  // UI_VIEWS_CONTROLS_SCROLL_VIEW_H_
+diff --git a/ui/views/controls/separator.h b/ui/views/controls/separator.h
+index eeb92d1..e95a921 100644
+--- a/ui/views/controls/separator.h
++++ b/ui/views/controls/separator.h
+@@ -43,11 +43,11 @@
+   DISALLOW_COPY_AND_ASSIGN(Separator);
+ };
+ 
++}  // namespace views
++
+ BEGIN_VIEW_BUILDER(VIEWS_EXPORT, Separator, View)
+ VIEW_BUILDER_PROPERTY(SkColor, Color)
+ VIEW_BUILDER_PROPERTY(int, PreferredHeight)
+ END_VIEW_BUILDER(VIEWS_EXPORT, Separator)
+ 
+-}  // namespace views
+-
+ #endif  // UI_VIEWS_CONTROLS_SEPARATOR_H_
+diff --git a/ui/views/controls/textfield/textfield.h b/ui/views/controls/textfield/textfield.h
+index 87bbdb17..f8e79cb 100644
+--- a/ui/views/controls/textfield/textfield.h
++++ b/ui/views/controls/textfield/textfield.h
+@@ -738,6 +738,8 @@
+   DISALLOW_COPY_AND_ASSIGN(Textfield);
+ };
+ 
++}  // namespace views
++
+ BEGIN_VIEW_BUILDER(VIEWS_EXPORT, Textfield, View)
+ VIEW_BUILDER_PROPERTY(base::string16, AccessibleName)
+ VIEW_BUILDER_PROPERTY(SkColor, BackgroundColor)
+@@ -757,6 +759,4 @@
+ VIEW_BUILDER_PROPERTY(ui::TextInputType, TextInputType)
+ END_VIEW_BUILDER(VIEWS_EXPORT, Textfield)
+ 
+-}  // namespace views
+-
+ #endif  // UI_VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_H_
+diff --git a/ui/views/layout/box_layout_view.h b/ui/views/layout/box_layout_view.h
+index 111f322..db0ebba 100644
+--- a/ui/views/layout/box_layout_view.h
++++ b/ui/views/layout/box_layout_view.h
+@@ -65,6 +65,8 @@
+   int default_flex_;
+ };
+ 
++}  // namespace views
++
+ BEGIN_VIEW_BUILDER(VIEWS_EXPORT, BoxLayoutView, View)
+ VIEW_BUILDER_PROPERTY(BoxLayout::Orientation, Orientation)
+ VIEW_BUILDER_PROPERTY(BoxLayout::MainAxisAlignment, MainAxisAlignment)
+@@ -76,6 +78,4 @@
+ VIEW_BUILDER_PROPERTY(int, DefaultFlex)
+ END_VIEW_BUILDER(VIEWS_EXPORT, BoxLayoutView)
+ 
+-}  // namespace views
+-
+ #endif  // UI_VIEWS_LAYOUT_BOX_LAYOUT_VIEW_H_
+diff --git a/ui/views/layout/flex_layout_view.h b/ui/views/layout/flex_layout_view.h
+index cfd504d0..a6b993c 100644
+--- a/ui/views/layout/flex_layout_view.h
++++ b/ui/views/layout/flex_layout_view.h
+@@ -78,6 +78,8 @@
+   FlexAllocationOrder flex_allocation_order_;
+ };
+ 
++}  // namespace views
++
+ BEGIN_VIEW_BUILDER(VIEWS_EXPORT, FlexLayoutView, View)
+ VIEW_BUILDER_PROPERTY(LayoutOrientation, Orientation)
+ VIEW_BUILDER_PROPERTY(LayoutAlignment, MainAxisAlignment)
+@@ -90,6 +92,4 @@
+ VIEW_BUILDER_PROPERTY(FlexAllocationOrder, FlexAllocationOrder)
+ END_VIEW_BUILDER(VIEWS_EXPORT, FlexLayoutView)
+ 
+-}  // namespace views
+-
+ #endif  // UI_VIEWS_LAYOUT_FLEX_LAYOUT_VIEW_H_
+diff --git a/ui/views/metadata/view_factory.h b/ui/views/metadata/view_factory.h
+index 105b3ce..d6ab03e 100644
+--- a/ui/views/metadata/view_factory.h
++++ b/ui/views/metadata/view_factory.h
+@@ -70,6 +70,8 @@
+   ViewClass_** view_address_ = nullptr;
+ };
+ 
++}  // namespace views
++
+ // Example of builder class generated by the following macros.
+ //
+ // template <typename Builder, typename ViewClass>
+@@ -120,6 +122,7 @@
+ //     : public LabelButtonBuilderT<LabelButtonBuilderTest, LabelButton> {};
+ 
+ #define BEGIN_VIEW_BUILDER(export, view_class, ancestor)                    \
++  namespace views {                                                         \
+   template <typename BuilderT>                                              \
+   class export view_class##BuilderT : public ancestor##BuilderT<BuilderT> { \
+    public:                                                                  \
+@@ -188,11 +191,10 @@
+   };                                         \
+                                              \
+   template <>                                \
+-  class export views::Builder<view_class>    \
+-      : public view_class##BuilderT<views::Builder<view_class>>{};
++  class export Builder<view_class>           \
++      : public view_class##BuilderT<Builder<view_class>>{}; \
++}  // namespace views
+ 
+ // clang-format on
+ 
+-}  // namespace views
+-
+ #endif  // UI_VIEWS_METADATA_VIEW_FACTORY_H_
+diff --git a/ui/views/view.h b/ui/views/view.h
+index 2003eeb..d6e66eb 100644
+--- a/ui/views/view.h
++++ b/ui/views/view.h
+@@ -2061,6 +2061,8 @@
+   DISALLOW_COPY_AND_ASSIGN(View);
+ };
+ 
++}  // namespace views
++
+ BEGIN_VIEW_BUILDER(VIEWS_EXPORT, View, BaseView)
+ VIEW_BUILDER_PROPERTY(std::unique_ptr<Background>, Background)
+ VIEW_BUILDER_PROPERTY(std::unique_ptr<Border>, Border)
+@@ -2083,6 +2085,4 @@
+ VIEW_BUILDER_PROPERTY(bool, CanProcessEventsWithinSubtree)
+ END_VIEW_BUILDER(VIEWS_EXPORT, View)
+ 
+-}  // namespace views
+-
+ #endif  // UI_VIEWS_VIEW_H_

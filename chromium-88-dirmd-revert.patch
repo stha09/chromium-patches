@@ -1,0 +1,19 @@
+Revert change to extract component via dircmd because it fails at the momtent.
+
+See https://bugs.chromium.org/p/chromium/issues/detail?id=1102997#c38
+
+diff --git a/tools/metrics/histograms/expand_owners.py b/tools/metrics/histograms/expand_owners.py
+index 762d226..ad28ddc 100644
+--- a/tools/metrics/histograms/expand_owners.py
++++ b/tools/metrics/histograms/expand_owners.py
+@@ -415,9 +415,7 @@ def ExpandHistogramsOWNERS(histograms):
+ 
+       _UpdateHistogramOwners(histogram, owner, owners_to_add)
+ 
+-      component = _ExtractComponentViaDirmd(os.path.dirname(path))
+-      if not component:
+-        component = _ExtractComponentFromOWNERS(path)
++      component = _ExtractComponentFromOWNERS(path)
+       if component and component not in components_with_dom_elements:
+         components_with_dom_elements.add(component)
+         _AddHistogramComponent(histogram, component)

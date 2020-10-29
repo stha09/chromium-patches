@@ -1,0 +1,26 @@
+From bfac1f6313fe25abb49f93ed037da90cfd1e7610 Mon Sep 17 00:00:00 2001
+From: Jose Dapena Paz <jdapena@igalia.com>
+Date: Tue, 20 Oct 2020 10:24:08 +0200
+Subject: [PATCH] GCC: do not use global qualification in struct declaration name, in interned_args_helper.
+
+Fix build error in GCC:
+../../base/trace_event/interned_args_helper.h:47:60: error: global qualification of class name is invalid before ‘{’ token
+   47 | struct ::std::hash<base::trace_event::TraceSourceLocation> {
+
+Bug: 819294
+Change-Id: I725122eca84d020f6e6530600782f5cd54195843
+---
+
+diff --git a/base/trace_event/interned_args_helper.h b/base/trace_event/interned_args_helper.h
+index 2f8f5bb..ac85c19 100644
+--- a/base/trace_event/interned_args_helper.h
++++ b/base/trace_event/interned_args_helper.h
+@@ -44,7 +44,7 @@
+ namespace std {
+ 
+ template <>
+-struct ::std::hash<base::trace_event::TraceSourceLocation> {
++struct hash<base::trace_event::TraceSourceLocation> {
+   std::size_t operator()(
+       const base::trace_event::TraceSourceLocation& loc) const {
+     static_assert(sizeof(base::trace_event::TraceSourceLocation) ==
