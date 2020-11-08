@@ -1,0 +1,77 @@
+From 9c340e64c41d3a85bb52cfea17b41593c1132c80 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Fri, 6 Nov 2020 14:38:51 +0000
+Subject: [PATCH] GCC: fix type confusion in voting
+
+GCC has problems to distinguish between alias and class, e.g.
+
+  using AcceptedVote = AcceptedVote<VoteImpl>;
+
+gives errors like:
+
+../../components/performance_manager/public/voting/voting.h:366:9:
+error: declaration of 'using AcceptedVote = class
+performance_manager::voting::AcceptedVote<VoteImpl>' changes meaning of
+'AcceptedVote' [-fpermissive]
+  366 |   using AcceptedVote = AcceptedVote<VoteImpl>;
+      |         ^~~~~~~~~~~~
+
+Solution is to add class to right side.
+---
+ .../performance_manager/public/voting/voting.h       | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/components/performance_manager/public/voting/voting.h b/components/performance_manager/public/voting/voting.h
+index 29c6685..e741f16 100644
+--- a/components/performance_manager/public/voting/voting.h
++++ b/components/performance_manager/public/voting/voting.h
+@@ -119,7 +119,7 @@ class AcceptedVote;
+ template <class VoteImpl>
+ class VoteReceipt final {
+  public:
+-  using AcceptedVote = AcceptedVote<VoteImpl>;
++  using AcceptedVote = class AcceptedVote<VoteImpl>;
+   using PassKey = util::PassKey<VoteReceipt<VoteImpl>>;
+ 
+   VoteReceipt();
+@@ -192,7 +192,7 @@ template <class VoteImpl>
+ class AcceptedVote final {
+  public:
+   using PassKey = util::PassKey<AcceptedVote<VoteImpl>>;
+-  using VoteReceipt = VoteReceipt<VoteImpl>;
++  using VoteReceipt = class VoteReceipt<VoteImpl>;
+ 
+   AcceptedVote();
+   AcceptedVote(VoteConsumer<VoteImpl>* consumer,
+@@ -272,7 +272,7 @@ template <class VoteImpl>
+ class VotingChannel final {
+  public:
+   using PassKey = util::PassKey<VotingChannel<VoteImpl>>;
+-  using VotingChannelFactory = VotingChannelFactory<VoteImpl>;
++  using VotingChannelFactory = class VotingChannelFactory<VoteImpl>;
+ 
+   VotingChannel();
+   VotingChannel(const VotingChannel& rhs) = delete;
+@@ -318,7 +318,7 @@ class VotingChannel final {
+ template <class VoteImpl>
+ class VotingChannelFactory final {
+  public:
+-  using VotingChannel = VotingChannel<VoteImpl>;
++  using VotingChannel = class VotingChannel<VoteImpl>;
+ 
+   explicit VotingChannelFactory(VoteConsumer<VoteImpl>* consumer);
+   ~VotingChannelFactory();
+@@ -363,8 +363,8 @@ class VoteConsumer {
+   VoteConsumer(const VoteConsumer& rhs) = delete;
+   VoteConsumer& operator=(const VoteConsumer& rhs) = delete;
+ 
+-  using AcceptedVote = AcceptedVote<VoteImpl>;
+-  using VotingChannel = VotingChannel<VoteImpl>;
++  using AcceptedVote = class AcceptedVote<VoteImpl>;
++  using VotingChannel = class VotingChannel<VoteImpl>;
+ 
+   // Used by a VotingChannel to submit votes to this consumer.
+   virtual VoteReceipt<VoteImpl> SubmitVote(util::PassKey<VotingChannel>,
+-- 
+2.26.2
+
