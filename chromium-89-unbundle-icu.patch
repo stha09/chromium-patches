@@ -1,0 +1,27 @@
+From 6e5280d45e321c31c5ea593e1a41ef3facbb3e46 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 28 Nov 2020 16:50:55 +0000
+Subject: [PATCH] add localmatcher.h to common shim headers when unbundling ICU
+
+localmatcher.h was added in icu-68.1 and is required with:
+
+https://crrev.com/741586ecfbe42908e66016eb6319a1cc0ffc379e
+---
+ build/linux/unbundle/icu.gn | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/build/linux/unbundle/icu.gn b/build/linux/unbundle/icu.gn
+index e77bc43..f91b95e 100644
+--- a/build/linux/unbundle/icu.gn
++++ b/build/linux/unbundle/icu.gn
+@@ -175,6 +175,7 @@ shim_headers("icuuc_shim") {
+     "unicode/icudataver.h",
+     "unicode/icuplug.h",
+     "unicode/idna.h",
++    "unicode/localematcher.h",
+     "unicode/localpointer.h",
+     "unicode/locdspnm.h",
+     "unicode/locid.h",
+-- 
+2.26.2
+

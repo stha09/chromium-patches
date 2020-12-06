@@ -1,0 +1,36 @@
+From 6f07e97e507b0e9ce7bf343888df9f1c129181cb Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 28 Nov 2020 13:15:06 +0000
+Subject: [PATCH] GCC: disable NO_UNIQUE_ADDRESS in flat_tree
+
+Triggers an internal compiler error, e.g.
+testcase.ii:58:77: internal compiler error: in output_constructor_regular_field, at varasm.c:5249
+   58 | void Get() { static auto kSchemas = MakeFixedFlatMap<int, int>({{"", ""}}); }
+      |                                                                             ^
+
+For more information see https://gcc.gnu.org/PR96863
+---
+ base/containers/flat_tree.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/base/containers/flat_tree.h b/base/containers/flat_tree.h
+index 22952d0..5645f36 100644
+--- a/base/containers/flat_tree.h
++++ b/base/containers/flat_tree.h
+@@ -547,7 +547,13 @@ class flat_tree {
+   // To support comparators that may not be possible to default-construct, we
+   // have to store an instance of Compare. Since Compare commonly is stateless,
+   // we use the NO_UNIQUE_ADDRESS attribute to save space.
++  // Disable NO_UNIQUE_ADDRESS for GCC because it triggers an ICE
++  // (https://gcc.gnu.org/PR96863).
++#if defined(COMPILER_GCC)
++  key_compare comp_;
++#else
+   NO_UNIQUE_ADDRESS key_compare comp_;
++#endif
+ 
+   // If the compare is not transparent we want to construct key_type once.
+   template <typename K>
+-- 
+2.26.2
+
