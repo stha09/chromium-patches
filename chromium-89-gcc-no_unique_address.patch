@@ -1,36 +1,100 @@
-From 6f07e97e507b0e9ce7bf343888df9f1c129181cb Mon Sep 17 00:00:00 2001
+From 5df2e4ca6b8c1cfc46e3d6f66108d81d5b19a4ca Mon Sep 17 00:00:00 2001
 From: Stephan Hartmann <stha09@googlemail.com>
-Date: Sat, 28 Nov 2020 13:15:06 +0000
-Subject: [PATCH] GCC: disable NO_UNIQUE_ADDRESS in flat_tree
+Date: Wed, 09 Dec 2020 18:54:59 +0000
+Subject: [PATCH] GCC: exchange declarations to avoid ICE in flat_tree
 
-Triggers an internal compiler error, e.g.
-testcase.ii:58:77: internal compiler error: in output_constructor_regular_field, at varasm.c:5249
-   58 | void Get() { static auto kSchemas = MakeFixedFlatMap<int, int>({{"", ""}}); }
-      |                                                                             ^
+Following code in flat_tree.h triggers an ICE in GCC 9
+and onwards:
 
-For more information see https://gcc.gnu.org/PR96863
+container_type body_;
+NO_UNIQUE_ADDRESS key_compare comp_;
+
+testcase.ii:58:77: internal compiler error: in
+     output_constructor_regular_field, at varasm.c:5249
+   58 | void Get() { static auto kSchemas =
+           MakeFixedFlatMap<int, int>({{"", ""}}); }
+
+Swapping the declaration does not change behavior, but
+it doesn't trigger the ICE anymore.
+
+Bug: 1156268
+Change-Id: I865812bf24daf14bf53473726c40b4566e002cde
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2574860
+Commit-Queue: Jan Wilken Dörrie <jdoerrie@chromium.org>
+Reviewed-by: Jan Wilken Dörrie <jdoerrie@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#835285}
 ---
- base/containers/flat_tree.h | 6 ++++++
- 1 file changed, 6 insertions(+)
 
 diff --git a/base/containers/flat_tree.h b/base/containers/flat_tree.h
-index 22952d0..5645f36 100644
+index 733eeda..a3ab9d7 100644
 --- a/base/containers/flat_tree.h
 +++ b/base/containers/flat_tree.h
-@@ -547,7 +547,13 @@ class flat_tree {
+@@ -542,11 +542,13 @@
+ 
+   void sort_and_unique() { sort_and_unique(begin(), end()); }
+ 
+-  container_type body_;
    // To support comparators that may not be possible to default-construct, we
    // have to store an instance of Compare. Since Compare commonly is stateless,
    // we use the NO_UNIQUE_ADDRESS attribute to save space.
-+  // Disable NO_UNIQUE_ADDRESS for GCC because it triggers an ICE
-+  // (https://gcc.gnu.org/PR96863).
-+#if defined(COMPILER_GCC)
-+  key_compare comp_;
-+#else
    NO_UNIQUE_ADDRESS key_compare comp_;
-+#endif
++  // Declare after |key_compare_comp_| to workaround GCC ICE. For details
++  // see https://crbug.com/1156268
++  container_type body_;
  
    // If the compare is not transparent we want to construct key_type once.
    template <typename K>
--- 
-2.26.2
-
+@@ -568,7 +570,7 @@
+     InputIterator first,
+     InputIterator last,
+     const KeyCompare& comp)
+-    : body_(first, last), comp_(comp) {
++    : comp_(comp), body_(first, last) {
+   sort_and_unique();
+ }
+ 
+@@ -576,7 +578,7 @@
+ flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::flat_tree(
+     const container_type& items,
+     const KeyCompare& comp)
+-    : body_(items), comp_(comp) {
++    : comp_(comp), body_(items) {
+   sort_and_unique();
+ }
+ 
+@@ -584,7 +586,7 @@
+ flat_tree<Key, GetKeyFromValue, KeyCompare, Container>::flat_tree(
+     container_type&& items,
+     const KeyCompare& comp)
+-    : body_(std::move(items)), comp_(comp) {
++    : comp_(comp), body_(std::move(items)) {
+   sort_and_unique();
+ }
+ 
+@@ -601,7 +603,7 @@
+     InputIterator first,
+     InputIterator last,
+     const KeyCompare& comp)
+-    : body_(first, last), comp_(comp) {
++    : comp_(comp), body_(first, last) {
+   DCHECK(is_sorted_and_unique(*this, value_comp()));
+ }
+ 
+@@ -610,7 +612,7 @@
+     sorted_unique_t,
+     const container_type& items,
+     const KeyCompare& comp)
+-    : body_(items), comp_(comp) {
++    : comp_(comp), body_(items) {
+   DCHECK(is_sorted_and_unique(*this, value_comp()));
+ }
+ 
+@@ -619,7 +621,7 @@
+     sorted_unique_t,
+     container_type&& items,
+     const KeyCompare& comp)
+-    : body_(std::move(items)), comp_(comp) {
++    : comp_(comp), body_(std::move(items)) {
+   DCHECK(is_sorted_and_unique(*this, value_comp()));
+ }
+ 
