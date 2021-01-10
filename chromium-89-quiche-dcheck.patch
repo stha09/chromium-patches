@@ -1,6 +1,6 @@
-From 9abe7086530c7653d37ec164450b9b05d53bc5e2 Mon Sep 17 00:00:00 2001
+From 7cd4eab0bfca6192f14d6143410e1ae774eb1c29 Mon Sep 17 00:00:00 2001
 From: Stephan Hartmann <stha09@googlemail.com>
-Date: Thu, 26 Nov 2020 09:37:25 +0000
+Date: Thu, 31 Dec 2020 11:57:22 +0000
 Subject: [PATCH] GCC: do not pass unique_ptr to DCHECK_NE, but the actual
  pointer
 
@@ -12,18 +12,18 @@ provide any. USE DCHECK instead.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/net/third_party/quiche/src/quic/core/quic_path_validator.cc b/net/third_party/quiche/src/quic/core/quic_path_validator.cc
-index 5d5e720..d29dcb4 100644
+index 0722216..fb2aeaf 100644
 --- a/net/third_party/quiche/src/quic/core/quic_path_validator.cc
 +++ b/net/third_party/quiche/src/quic/core/quic_path_validator.cc
-@@ -66,7 +66,7 @@ void QuicPathValidator::StartValidingPath(
+@@ -68,7 +68,7 @@ void QuicPathValidator::OnPathResponse(const QuicPathFrameBuffer& probing_data,
+ void QuicPathValidator::StartPathValidation(
      std::unique_ptr<QuicPathValidationContext> context,
      std::unique_ptr<ResultDelegate> result_delegate) {
-   CancelPathValidation();
 -  DCHECK_NE(nullptr, context);
 +  DCHECK(context);
    QUIC_DLOG(INFO) << "Start validating path " << *context
                    << " via writer: " << context->WriterToUse();
- 
+   if (path_context_ != nullptr) {
 -- 
 2.26.2
 
