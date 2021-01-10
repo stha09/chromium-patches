@@ -1,0 +1,36 @@
+From fb33c2546d1884368ef7d17efc95d820fb6e6e4d Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 19 Dec 2020 12:54:29 +0000
+Subject: [PATCH] libstdc++: do not use vector of const types
+
+GNU libstdc++ std::vector explicitely forbids creating an std::vector of
+const types. Remove const from type and return const_iterator instead.
+---
+ ui/gfx/image/image_skia.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/ui/gfx/image/image_skia.cc b/ui/gfx/image/image_skia.cc
+index 6d2748d..31dfdf5 100644
+--- a/ui/gfx/image/image_skia.cc
++++ b/ui/gfx/image/image_skia.cc
+@@ -125,7 +125,7 @@ class ImageSkiaStorage : public base::RefCountedThreadSafe<ImageSkiaStorage> {
+   //   one and rescale the image.
+   // Right now only Windows uses 2 and other platforms use 1 by default.
+   // TODO(mukai, oshima): abandon 1 code path and use 2 for every platforms.
+-  std::vector<const ImageSkiaRep>::iterator FindRepresentation(
++  std::vector<ImageSkiaRep>::const_iterator FindRepresentation(
+       float scale,
+       bool fetch_new_image) const;
+ 
+@@ -211,7 +211,7 @@ bool ImageSkiaStorage::HasRepresentationAtAllScales() const {
+   return source_ && source_->HasRepresentationAtAllScales();
+ }
+ 
+-std::vector<const ImageSkiaRep>::iterator ImageSkiaStorage::FindRepresentation(
++std::vector<ImageSkiaRep>::const_iterator ImageSkiaStorage::FindRepresentation(
+     float scale,
+     bool fetch_new_image) const {
+   auto closest_iter = image_reps_.end();
+-- 
+2.26.2
+

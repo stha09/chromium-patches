@@ -1,0 +1,16 @@
+diff --git a/base/strings/char_traits.h b/base/strings/char_traits.h
+index 574d6a2..c06d51a 100644
+--- a/base/strings/char_traits.h
++++ b/base/strings/char_traits.h
+@@ -34,9 +36,9 @@ constexpr int CharTraits<T>::compare(const T* s1,
+                                      const T* s2,
+                                      size_t n) noexcept {
+   for (; n; --n, ++s1, ++s2) {
+-    if (*s1 < *s2)
++    if (unsigned(*s1) < unsigned(*s2))
+       return -1;
+-    if (*s1 > *s2)
++    if (unsigned(*s1) > unsigned(*s2))
+       return 1;
+   }
+   return 0;

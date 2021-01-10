@@ -1,0 +1,205 @@
+From bc8fec440dece540165ed13dbc0009a7db041846 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Tue, 22 Dec 2020 18:26:24 +0000
+Subject: [PATCH] libstdc++: fix incomplete type for FramebufferCache
+
+libstdc++ does not allow incomplete type for T2 with std::pair<T1,T2>
+and fails with:
+.../../third_party/angle/src/libANGLE/renderer/vulkan/vk_cache_utils.h:1570:64:
+required from here
+/usr/lib/gcc/x86_64-pc-linux-gnu/9.3.0/include/g++-v9/bits/stl_pair.h:215:11:
+error: std::pair<_T1, _T2>::second has incomplete type
+  215 |       _T2 second;     /// @c second is a copy of the second object
+      |           ^~~~~~
+
+https://chromium-review.googlesource.com/c/angle/angle/+/2580111
+added class FramebufferCache with incomplete type in |mPayload| to
+vk::FramebufferHelper. Changing include order is not an option.
+However, FramebufferCache is only used in FramebufferVk and we
+can make FramebufferCache a nested class of FramebufferVk.
+---
+ .../renderer/vulkan/FramebufferVk.cpp         | 39 +++++++++++++++++++
+ .../libANGLE/renderer/vulkan/FramebufferVk.h  | 21 ++++++++++
+ .../renderer/vulkan/vk_cache_utils.cpp        | 39 -------------------
+ .../libANGLE/renderer/vulkan/vk_cache_utils.h | 21 ----------
+ 4 files changed, 60 insertions(+), 60 deletions(-)
+
+diff --git a/third_party/angle/src/libANGLE/renderer/vulkan/FramebufferVk.cpp b/third_party/angle/src/libANGLE/renderer/vulkan/FramebufferVk.cpp
+index 93c7384..0e5dad7 100644
+--- a/third_party/angle/src/libANGLE/renderer/vulkan/FramebufferVk.cpp
++++ b/third_party/angle/src/libANGLE/renderer/vulkan/FramebufferVk.cpp
+@@ -2719,4 +2719,43 @@ void FramebufferVk::updateRenderPassReadOnlyDepthMode(ContextVk *contextVk,
+ 
+     renderPass->updateStartedRenderPassWithDepthMode(readOnlyDepthStencilMode);
+ }
++
++// FramebufferCache implementation.
++void FramebufferVk::FramebufferCache::destroy(RendererVk *rendererVk)
++{
++    rendererVk->accumulateCacheStats(VulkanCacheType::Framebuffer, mCacheStats);
++    mPayload.clear();
++}
++
++bool FramebufferVk::FramebufferCache::get(ContextVk *contextVk,
++					  const vk::FramebufferDesc &desc,
++					  vk::FramebufferHelper **framebufferHelperOut)
++{
++    auto iter = mPayload.find(desc);
++    if (iter != mPayload.end())
++    {
++        *framebufferHelperOut = &iter->second;
++        mCacheStats.hit();
++        return true;
++    }
++
++    mCacheStats.miss();
++    return false;
++}
++
++void FramebufferVk::FramebufferCache::insert(const vk::FramebufferDesc &desc,
++					     vk::FramebufferHelper &&framebufferHelper)
++{
++    mPayload.emplace(desc, std::move(framebufferHelper));
++}
++
++void FramebufferVk::FramebufferCache::clear(ContextVk *contextVk)
++{
++    for (auto &entry : mPayload)
++    {
++        vk::FramebufferHelper &tmpFB = entry.second;
++        tmpFB.release(contextVk);
++    }
++    mPayload.clear();
++}
+ }  // namespace rx
+diff --git a/third_party/angle/src/libANGLE/renderer/vulkan/FramebufferVk.h b/third_party/angle/src/libANGLE/renderer/vulkan/FramebufferVk.h
+index e16ba33..01c36a9 100644
+--- a/third_party/angle/src/libANGLE/renderer/vulkan/FramebufferVk.h
++++ b/third_party/angle/src/libANGLE/renderer/vulkan/FramebufferVk.h
+@@ -16,6 +16,7 @@
+ #include "libANGLE/renderer/vulkan/BufferVk.h"
+ #include "libANGLE/renderer/vulkan/ResourceVk.h"
+ #include "libANGLE/renderer/vulkan/UtilsVk.h"
++#include "libANGLE/renderer/vulkan/vk_helpers.h"
+ #include "libANGLE/renderer/vulkan/vk_cache_utils.h"
+ 
+ namespace rx
+@@ -235,6 +236,26 @@ class FramebufferVk : public FramebufferImpl
+     // contain the mask to apply to the alpha channel when drawing.
+     gl::DrawBufferMask mEmulatedAlphaAttachmentMask;
+ 
++    // FramebufferVk Cache
++    class FramebufferCache final : angle::NonCopyable
++    {
++      public:
++        FramebufferCache() = default;
++        ~FramebufferCache() { ASSERT(mPayload.empty()); }
++
++        void destroy(RendererVk *rendererVk);
++
++        bool get(ContextVk *contextVk,
++                 const vk::FramebufferDesc &desc,
++                 vk::FramebufferHelper **framebufferOut);
++        void insert(const vk::FramebufferDesc &desc, vk::FramebufferHelper &&framebufferHelper);
++        void clear(ContextVk *contextVk);
++
++      private:
++        angle::HashMap<vk::FramebufferDesc, vk::FramebufferHelper> mPayload;
++        CacheStats mCacheStats;
++    };
++
+     vk::FramebufferDesc mCurrentFramebufferDesc;
+     FramebufferCache mFramebufferCache;
+ 
+diff --git a/third_party/angle/src/libANGLE/renderer/vulkan/vk_cache_utils.cpp b/third_party/angle/src/libANGLE/renderer/vulkan/vk_cache_utils.cpp
+index 23c9278..431fef2 100644
+--- a/third_party/angle/src/libANGLE/renderer/vulkan/vk_cache_utils.cpp
++++ b/third_party/angle/src/libANGLE/renderer/vulkan/vk_cache_utils.cpp
+@@ -3661,45 +3661,6 @@ angle::Result SamplerCache::getSampler(ContextVk *contextVk,
+     return angle::Result::Continue;
+ }
+ 
+-// FramebufferCache implementation.
+-void FramebufferCache::destroy(RendererVk *rendererVk)
+-{
+-    rendererVk->accumulateCacheStats(VulkanCacheType::Framebuffer, mCacheStats);
+-    mPayload.clear();
+-}
+-
+-bool FramebufferCache::get(ContextVk *contextVk,
+-                           const vk::FramebufferDesc &desc,
+-                           vk::FramebufferHelper **framebufferHelperOut)
+-{
+-    auto iter = mPayload.find(desc);
+-    if (iter != mPayload.end())
+-    {
+-        *framebufferHelperOut = &iter->second;
+-        mCacheStats.hit();
+-        return true;
+-    }
+-
+-    mCacheStats.miss();
+-    return false;
+-}
+-
+-void FramebufferCache::insert(const vk::FramebufferDesc &desc,
+-                              vk::FramebufferHelper &&framebufferHelper)
+-{
+-    mPayload.emplace(desc, std::move(framebufferHelper));
+-}
+-
+-void FramebufferCache::clear(ContextVk *contextVk)
+-{
+-    for (auto &entry : mPayload)
+-    {
+-        vk::FramebufferHelper &tmpFB = entry.second;
+-        tmpFB.release(contextVk);
+-    }
+-    mPayload.clear();
+-}
+-
+ // DriverUniformsDescriptorSetCache implementation.
+ void DriverUniformsDescriptorSetCache::destroy(RendererVk *rendererVk)
+ {
+diff --git a/third_party/angle/src/libANGLE/renderer/vulkan/vk_cache_utils.h b/third_party/angle/src/libANGLE/renderer/vulkan/vk_cache_utils.h
+index 2285a92..cb75f7d 100644
+--- a/third_party/angle/src/libANGLE/renderer/vulkan/vk_cache_utils.h
++++ b/third_party/angle/src/libANGLE/renderer/vulkan/vk_cache_utils.h
+@@ -53,7 +53,6 @@ enum DescriptorSetIndex : uint32_t
+ namespace vk
+ {
+ class DynamicDescriptorPool;
+-class FramebufferHelper;
+ class ImageHelper;
+ enum class ImageLayout;
+ 
+@@ -1551,26 +1550,6 @@ class SamplerYcbcrConversionCache final : angle::NonCopyable
+     CacheStats mCacheStats;
+ };
+ 
+-// FramebufferVk Cache
+-class FramebufferCache final : angle::NonCopyable
+-{
+-  public:
+-    FramebufferCache() = default;
+-    ~FramebufferCache() { ASSERT(mPayload.empty()); }
+-
+-    void destroy(RendererVk *rendererVk);
+-
+-    bool get(ContextVk *contextVk,
+-             const vk::FramebufferDesc &desc,
+-             vk::FramebufferHelper **framebufferOut);
+-    void insert(const vk::FramebufferDesc &desc, vk::FramebufferHelper &&framebufferHelper);
+-    void clear(ContextVk *contextVk);
+-
+-  private:
+-    angle::HashMap<vk::FramebufferDesc, vk::FramebufferHelper> mPayload;
+-    CacheStats mCacheStats;
+-};
+-
+ // DescriptorSet Cache
+ class DriverUniformsDescriptorSetCache final : angle::NonCopyable
+ {
+-- 
+2.26.2
+
