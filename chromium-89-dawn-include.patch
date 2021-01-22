@@ -1,24 +1,28 @@
-From a75b7265e7429aa48f180dcaf9652a1f3c722718 Mon Sep 17 00:00:00 2001
+From 5a56bfe8d281250a1deee0d116a9fcde65b9c29a Mon Sep 17 00:00:00 2001
 From: Stephan Hartmann <stha09@googlemail.com>
-Date: Sun, 10 Jan 2021 08:13:31 +0000
-Subject: [PATCH] IWYU: add missing include for size_t
+Date: Fri, 15 Jan 2021 18:37:05 +0000
+Subject: [PATCH] IWYU: add various missing includes
 
+std::weak_ptr and std::shared_ptr require map
+*int*_t types require cstdint
 ---
- third_party/dawn/src/common/Alloc.h | 1 +
- 1 file changed, 1 insertion(+)
+ third_party/dawn/src/dawn_wire/client/Device.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/third_party/dawn/src/common/Alloc.h b/third_party/dawn/src/common/Alloc.h
-index 5a9fb08..940d5ff 100644
---- a/third_party/dawn/src/common/Alloc.h
-+++ b/third_party/dawn/src/common/Alloc.h
-@@ -15,6 +15,7 @@
- #ifndef COMMON_ALLOC_H_
- #define COMMON_ALLOC_H_
+diff --git a/third_party/dawn/src/dawn_wire/client/Device.h b/third_party/dawn/src/dawn_wire/client/Device.h
+index 3f16700..1082549 100644
+--- a/third_party/dawn/src/dawn_wire/client/Device.h
++++ b/third_party/dawn/src/dawn_wire/client/Device.h
+@@ -22,7 +22,9 @@
+ #include "dawn_wire/client/ApiObjects_autogen.h"
+ #include "dawn_wire/client/ObjectBase.h"
  
-+#include <cstddef>
- #include <new>
++#include <cstdint>
+ #include <map>
++#include <memory>
  
- template <typename T>
+ namespace dawn_wire { namespace client {
+ 
 -- 
 2.26.2
 
