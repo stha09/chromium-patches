@@ -1,0 +1,24 @@
+From 7bffc90f320a426123839a871ab5d0670cea6d98 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Mon, 8 Feb 2021 12:40:18 +0000
+Subject: [PATCH] IWYU: add ctime for std::time
+
+---
+ ui/accessibility/ax_tree_serializer.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/ui/accessibility/ax_tree_serializer.h b/ui/accessibility/ax_tree_serializer.h
+index ddbbdcd..1790e3b 100644
+--- a/ui/accessibility/ax_tree_serializer.h
++++ b/ui/accessibility/ax_tree_serializer.h
+@@ -8,6 +8,7 @@
+ #include <stddef.h>
+ #include <stdint.h>
+ 
++#include <ctime>
+ #include <ostream>
+ #include <unordered_map>
+ #include <unordered_set>
+-- 
+2.26.2
+

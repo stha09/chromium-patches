@@ -1,0 +1,33 @@
+From 2b56e552fb65f6808836032f38311b742ebd9e20 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Mon, 8 Feb 2021 13:29:32 +0000
+Subject: [PATCH] libstdc++: fix incomplete type for DelegatedInkTrailData
+
+libstdc++ does not allow incomplete type for T2 with std::pair<T1,T2>.
+Include full definition of DelegatedInkTrailData.
+---
+ .../viz/service/display/delegated_ink_point_renderer_base.h     | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/components/viz/service/display/delegated_ink_point_renderer_base.h b/components/viz/service/display/delegated_ink_point_renderer_base.h
+index 534996a..1dd1e34 100644
+--- a/components/viz/service/display/delegated_ink_point_renderer_base.h
++++ b/components/viz/service/display/delegated_ink_point_renderer_base.h
+@@ -11,13 +11,13 @@
+ #include <vector>
+ 
+ #include "base/optional.h"
++#include "components/viz/service/display/delegated_ink_trail_data.h"
+ #include "components/viz/service/viz_service_export.h"
+ #include "mojo/public/cpp/bindings/receiver.h"
+ #include "services/viz/public/mojom/compositing/delegated_ink_point.mojom.h"
+ 
+ namespace viz {
+ class DelegatedInkMetadata;
+-class DelegatedInkTrailData;
+ 
+ // The number of points to predict into the future, when prediction is
+ // available.
+-- 
+2.26.2
+
