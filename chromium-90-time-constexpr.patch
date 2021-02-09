@@ -1,19 +1,24 @@
-From a16a73eb8b6f31e970c125b8d03cd0e9a872f174 Mon Sep 17 00:00:00 2001
+From d2c2562fc1e0174acbcb61d4747db2bca148884c Mon Sep 17 00:00:00 2001
 From: Stephan Hartmann <stha09@googlemail.com>
-Date: Fri, 22 Jan 2021 16:17:27 +0000
-Subject: [PATCH] GCC: make base::InSecondsF constexpr
+Date: Mon, 08 Feb 2021 18:24:43 +0000
+Subject: [PATCH] GCC: make base::InSeconds(F) constexpr
 
-blink::AnimationTimeDelta() uses it in a constexpr.
+blink::AnimationTimeDelta() uses it in one of the constexpr
+constructors.
+
+Bug: 819294
+Change-Id: If16b9c20335440de9d2a1bbf170b586f2492fe0e
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2644907
+Reviewed-by: Gabriel Charette <gab@chromium.org>
+Commit-Queue: Gabriel Charette <gab@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#851793}
 ---
- base/time/time.cc | 7 -------
- base/time/time.h  | 9 ++++++++-
- 2 files changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/base/time/time.cc b/base/time/time.cc
-index d224bd0..f165b6b 100644
+index d224bd01..38ff4d9 100644
 --- a/base/time/time.cc
 +++ b/base/time/time.cc
-@@ -196,13 +196,6 @@ int TimeDelta::InDaysFloored() const {
+@@ -196,17 +196,6 @@
                        : std::numeric_limits<int>::max();
  }
  
@@ -24,36 +29,43 @@ index d224bd0..f165b6b 100644
 -                      : std::numeric_limits<double>::infinity();
 -}
 -
- int64_t TimeDelta::InSeconds() const {
-   return is_inf() ? delta_ : (delta_ / Time::kMicrosecondsPerSecond);
- }
+-int64_t TimeDelta::InSeconds() const {
+-  return is_inf() ? delta_ : (delta_ / Time::kMicrosecondsPerSecond);
+-}
+-
+ double TimeDelta::InMillisecondsF() const {
+   if (!is_inf())
+     return double{delta_} / Time::kMicrosecondsPerMillisecond;
 diff --git a/base/time/time.h b/base/time/time.h
-index 0b3a944..6c33542 100644
+index 0b3a9447..f93f07f 100644
 --- a/base/time/time.h
 +++ b/base/time/time.h
-@@ -236,7 +236,7 @@ class BASE_EXPORT TimeDelta {
+@@ -236,8 +236,8 @@
    int InDaysFloored() const;
    constexpr int InHours() const;
    constexpr int InMinutes() const;
 -  double InSecondsF() const;
+-  int64_t InSeconds() const;
 +  constexpr double InSecondsF() const;
-   int64_t InSeconds() const;
++  constexpr int64_t InSeconds() const;
    double InMillisecondsF() const;
    int64_t InMilliseconds() const;
-@@ -913,6 +913,13 @@ constexpr int TimeDelta::InMinutes() const {
+   int64_t InMillisecondsRoundedUp() const;
+@@ -913,6 +913,17 @@
    return saturated_cast<int>(delta_ / Time::kMicrosecondsPerMinute);
  }
  
 +constexpr double TimeDelta::InSecondsF() const {
 +  if (!is_inf())
-+    return double{delta_} / Time::kMicrosecondsPerSecond;
++    return static_cast<double>(delta_) / Time::kMicrosecondsPerSecond;
 +  return (delta_ < 0) ? -std::numeric_limits<double>::infinity()
 +                      : std::numeric_limits<double>::infinity();
++}
++
++constexpr int64_t TimeDelta::InSeconds() const {
++  return is_inf() ? delta_ : (delta_ / Time::kMicrosecondsPerSecond);
 +}
 +
  constexpr int64_t TimeDelta::InNanoseconds() const {
    return base::ClampMul(delta_, Time::kNanosecondsPerMicrosecond);
  }
--- 
-2.26.2
-
