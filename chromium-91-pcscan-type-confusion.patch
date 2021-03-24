@@ -1,0 +1,28 @@
+From 17a666a291fd01f6f8e705408fb9b884f9ebc5a0 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sun, 21 Mar 2021 15:25:49 +0000
+Subject: [PATCH] GCC: fix type confusion in pcscan
+
+GCC gets confused if an alias is declared with name of another
+type, e.g. "using IdType = IdType<Context>". This can be avoided
+by adding explicit namespace.
+---
+ base/allocator/partition_allocator/starscan/pcscan.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/base/allocator/partition_allocator/starscan/pcscan.cc b/base/allocator/partition_allocator/starscan/pcscan.cc
+index c66297a..5e9ef10 100644
+--- a/base/allocator/partition_allocator/starscan/pcscan.cc
++++ b/base/allocator/partition_allocator/starscan/pcscan.cc
+@@ -279,7 +279,7 @@ class StatsCollector final {
+   template <Context context>
+   class DeferredTraceEventMap final {
+    public:
+-    using IdType = IdType<context>;
++    using IdType = StatsCollector::IdType<context>;
+     using UnderlyingMap = MetadataHashMap<
+         PlatformThreadId,
+         std::array<DeferredTraceEvent, static_cast<size_t>(IdType::kNumIds)>>;
+-- 
+2.26.3
+
