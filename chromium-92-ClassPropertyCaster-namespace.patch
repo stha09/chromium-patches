@@ -1,0 +1,46 @@
+From 546b72d3b31e5d42e4d6cb783def2c89c977c5a6 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Fri, 7 May 2021 14:34:29 +0000
+Subject: [PATCH] GCC: drop anonymous namespace from ClassPropertyCaster
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Explicit template specialization is done for ui::ElementIdentifier
+in another header. GCC fails to compile this with:
+
+../../ui/base/interaction/element_identifier.h:208:7: error:
+ explicit specialization of ‘template<class T>
+ class ui::{anonymous}::ClassPropertyCaster’ outside its
+ namespace must use a nested-name-specifier
+
+This is a known GCC bug (https://gcc.gnu.org/PR92598).
+---
+ ui/base/class_property.h | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/ui/base/class_property.h b/ui/base/class_property.h
+index 4af52ae..25c00e7 100644
+--- a/ui/base/class_property.h
++++ b/ui/base/class_property.h
+@@ -137,8 +137,6 @@ class COMPONENT_EXPORT(UI_BASE) PropertyHandler {
+   std::map<const void*, Value> prop_map_;
+ };
+ 
+-namespace {
+-
+ // No single new-style cast works for every conversion to/from int64_t, so we
+ // need this helper class.
+ template<typename T>
+@@ -162,8 +160,6 @@ class ClassPropertyCaster<base::TimeDelta> {
+   }
+ };
+ 
+-}  // namespace
+-
+ namespace subtle {
+ 
+ class COMPONENT_EXPORT(UI_BASE) PropertyHelper {
+-- 
+2.26.3
+
