@@ -1,0 +1,37 @@
+From 7ef6d4ad7ddc7f0c4124bc538c4bd3a8efdd37cd Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Fri, 4 Jun 2021 06:52:30 +0000
+Subject: [PATCH] GCC: fix brace-initialization with NoDestructor
+
+GCC requires brace-initialization for NoDestructor and
+std::vector<T> for base_types. Therefore change to double
+brace-initialzation.
+---
+ chrome/browser/ui/webui/settings/site_settings_helper.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/chrome/browser/ui/webui/settings/site_settings_helper.cc b/chrome/browser/ui/webui/settings/site_settings_helper.cc
+index 7831684..4478800 100644
+--- a/chrome/browser/ui/webui/settings/site_settings_helper.cc
++++ b/chrome/browser/ui/webui/settings/site_settings_helper.cc
+@@ -410,7 +410,7 @@ const std::vector<ContentSettingsType>& GetVisiblePermissionCategories() {
+   // First build the list of permissions that will be shown regardless of
+   // `origin`. Some categories such as COOKIES store their data in a custom way,
+   // so are not included here.
+-  static base::NoDestructor<std::vector<ContentSettingsType>> base_types({
++  static base::NoDestructor<std::vector<ContentSettingsType>> base_types{{
+     ContentSettingsType::AR, ContentSettingsType::AUTOMATIC_DOWNLOADS,
+         ContentSettingsType::BACKGROUND_SYNC,
+         ContentSettingsType::CLIPBOARD_READ_WRITE,
+@@ -429,7 +429,7 @@ const std::vector<ContentSettingsType>& GetVisiblePermissionCategories() {
+         ContentSettingsType::SENSORS, ContentSettingsType::SERIAL_GUARD,
+         ContentSettingsType::SOUND, ContentSettingsType::USB_GUARD,
+         ContentSettingsType::VR,
+-  });
++  }};
+   static bool initialized = false;
+   if (!initialized) {
+     // The permission categories in this block are only shown when running with
+-- 
+2.31.1
+

@@ -1,0 +1,43 @@
+From 0cdb42df76598037785ca33eb66bdc9ac2c16fd9 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 5 Jun 2021 11:16:29 +0000
+Subject: [PATCH] libstdc++: make constructors public in AXPropertyNode
+
+Making std::allocator<AXPropertyNode> friend of AXPropertyNode is
+useless, because std::allocator is free to delegate the task of
+construction to a free function or class which is not friend of
+AXPropertyNode. libstdc++ uses __gnu_cxx::new_allocator<T> for
+construction and fails if constructors of AXPropertyNode are
+private.
+---
+ ui/accessibility/platform/inspect/ax_property_node.h | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/ui/accessibility/platform/inspect/ax_property_node.h b/ui/accessibility/platform/inspect/ax_property_node.h
+index 35b8309..78bafa5 100644
+--- a/ui/accessibility/platform/inspect/ax_property_node.h
++++ b/ui/accessibility/platform/inspect/ax_property_node.h
+@@ -93,7 +93,6 @@ class AX_EXPORT AXPropertyNode final {
+   // Returns a tree-like string representation of the node.
+   std::string ToTreeString(const std::string& indent = "") const;
+ 
+- private:
+   using iterator = std::string::const_iterator;
+ 
+   explicit AXPropertyNode(iterator key_begin,
+@@ -105,11 +104,10 @@ class AX_EXPORT AXPropertyNode final {
+                  iterator value_begin,
+                  iterator value_end);
+ 
++ private:
+   // Builds a property node struct for a string of NAME(ARG1, ..., ARGN) format,
+   // where each ARG is a scalar value or a string of the same format.
+   static iterator Parse(AXPropertyNode* node, iterator begin, iterator end);
+-
+-  friend class std::allocator<AXPropertyNode>;
+ };
+ 
+ }  // namespace ui
+-- 
+2.31.1
+
