@@ -1,0 +1,25 @@
+From 177984b14a70949b56fd5de6f8423b4ffdbac4bc Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 19 Jun 2021 16:33:32 +0000
+Subject: [PATCH] libstdc++: remove format include
+
+format is C++20 feature that is not available yet.
+---
+ .../internal/execution/model_execution_manager_impl.cc           | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/components/segmentation_platform/internal/execution/model_execution_manager_impl.cc b/components/segmentation_platform/internal/execution/model_execution_manager_impl.cc
+index 4c6e896..bd78bed 100644
+--- a/components/segmentation_platform/internal/execution/model_execution_manager_impl.cc
++++ b/components/segmentation_platform/internal/execution/model_execution_manager_impl.cc
+@@ -5,7 +5,6 @@
+ #include "components/segmentation_platform/internal/execution/model_execution_manager_impl.h"
+ 
+ #include <deque>
+-#include <format>
+ #include <map>
+ #include <memory>
+ #include <vector>
+-- 
+2.31.1
+
