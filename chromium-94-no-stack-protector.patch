@@ -1,0 +1,38 @@
+From 5dee6bf5b94414fa13461d10e2e271923bc5dc30 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Fri, 30 Jul 2021 16:59:11 +0000
+Subject: [PATCH] GCC: add alternative for attribute no_stack_protector
+
+The attribute no_stack_protector is supported only with >=GCC-11.
+For older compilers use optimize attribute and force
+-fno-stack-protector. This resolves stack smashing errors seen
+after https://crrev.com/c/2895917, because GCC ignored the
+no_stack_protector attribute.
+---
+ base/compiler_specific.h | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/base/compiler_specific.h b/base/compiler_specific.h
+index 969dfa3..23b8285 100644
+--- a/base/compiler_specific.h
++++ b/base/compiler_specific.h
+@@ -320,7 +320,15 @@
+ // In some cases it's desirable to remove this, e.g. on hot functions, or if
+ // we have purposely changed the reference canary.
+ #if defined(COMPILER_GCC) || defined(__clang__)
+-#define NO_STACK_PROTECTOR __attribute__((no_stack_protector))
++#if defined(__has_attribute)
++#if __has_attribute(__no_stack_protector__)
++#define NO_STACK_PROTECTOR __attribute__((__no_stack_protector__))
++#else
++#define NO_STACK_PROTECTOR __attribute__ ((__optimize__("-fno-stack-protector")))
++#endif
++#else
++#define NO_STACK_PROTECTOR __attribute__ ((__optimize__("-fno-stack-protector")))
++#endif
+ #else
+ #define NO_STACK_PROTECTOR
+ #endif
+-- 
+2.31.1
+

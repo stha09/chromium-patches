@@ -1,0 +1,24 @@
+From 7600c53bec04ce264bc03cde0f6dfc34044ea5b4 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Wed, 28 Jul 2021 16:37:17 +0000
+Subject: [PATCH] IWYU: add cstring for memset/memcpy
+
+---
+ media/video/h264_parser.cc | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/media/video/h264_parser.cc b/media/video/h264_parser.cc
+index c972658..1e7a658 100644
+--- a/media/video/h264_parser.cc
++++ b/media/video/h264_parser.cc
+@@ -4,6 +4,7 @@
+ 
+ #include "media/video/h264_parser.h"
+ 
++#include <cstring>
+ #include <limits>
+ #include <memory>
+ 
+-- 
+2.31.1
+

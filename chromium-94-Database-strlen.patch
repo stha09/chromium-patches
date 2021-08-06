@@ -1,0 +1,36 @@
+From 278bc5d293973d722d1ac75b3df645ebd1d9e81b Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Thu, 5 Aug 2021 07:00:14 +0000
+Subject: [PATCH] GCC: drop std namespace from strlen in sql::Database
+
+std::strlen is defined in cstring. string.h is included already,
+but without namespace std.
+---
+ sql/database.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/sql/database.cc b/sql/database.cc
+index e6d5798..484cfba 100644
+--- a/sql/database.cc
++++ b/sql/database.cc
+@@ -1329,7 +1329,7 @@ scoped_refptr<Database::StatementRef> Database::GetStatementImpl(
+   }
+ 
+ #if DCHECK_IS_ON()
+-  DCHECK_EQ(unused_sql, sql + std::strlen(sql))
++  DCHECK_EQ(unused_sql, sql + strlen(sql))
+       << "Unused text: " << std::string(unused_sql) << "\n"
+       << "in prepared SQL statement: " << std::string(sql);
+ #endif  // DCHECK_IS_ON()
+@@ -1384,7 +1384,7 @@ bool Database::IsSQLValid(const char* sql) {
+   }
+ 
+ #if DCHECK_IS_ON()
+-  DCHECK_EQ(unused_sql, sql + std::strlen(sql))
++  DCHECK_EQ(unused_sql, sql + strlen(sql))
+       << "Unused text: " << std::string(unused_sql) << "\n"
+       << "in SQL statement: " << std::string(sql);
+ #endif  // DCHECK_IS_ON()
+-- 
+2.31.1
+
