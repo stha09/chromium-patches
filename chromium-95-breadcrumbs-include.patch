@@ -1,0 +1,43 @@
+From 6700f6bce59e2f1ea11edc0564bf0e81045326e5 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Thu, 19 Aug 2021 07:39:45 +0000
+Subject: [PATCH] IWYU: add string.h for strcpy in breadcrumbs
+
+Also remove namespace std from strcpy to avoid using cstring.
+---
+ .../core/breadcrumb_persistent_storage_manager.cc            | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/components/breadcrumbs/core/breadcrumb_persistent_storage_manager.cc b/components/breadcrumbs/core/breadcrumb_persistent_storage_manager.cc
+index dfd8160..1952aa1 100644
+--- a/components/breadcrumbs/core/breadcrumb_persistent_storage_manager.cc
++++ b/components/breadcrumbs/core/breadcrumb_persistent_storage_manager.cc
+@@ -6,6 +6,7 @@
+ 
+ #include <memory>
+ #include <string>
++#include <string.h>
+ 
+ #include "base/bind.h"
+ #include "base/files/file_util.h"
+@@ -42,7 +43,7 @@ void DoInsertEventsIntoMemoryMappedFile(const base::FilePath& file_path,
+ 
+   if (file_valid) {
+     char* data = reinterpret_cast<char*>(file->data());
+-    std::strcpy(&data[position], events.data());
++    strcpy(&data[position], events.data());
+   }
+ }
+ 
+@@ -58,7 +59,7 @@ void DoWriteEventsToFile(const base::FilePath& file_path,
+ 
+   if (file_valid) {
+     char* data = reinterpret_cast<char*>(file.data());
+-    std::strcpy(data, events.data());
++    strcpy(data, events.data());
+   }
+ }
+ 
+-- 
+2.31.1
+

@@ -1,0 +1,24 @@
+From d4b90d58cc7b263b4c307706629c38b12a9eb315 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 21 Aug 2021 17:07:25 +0000
+Subject: [PATCH] IWYU: add tuple for std::tie in ReservationOffsetTable
+
+---
+ base/allocator/partition_allocator/reservation_offset_table.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/base/allocator/partition_allocator/reservation_offset_table.h b/base/allocator/partition_allocator/reservation_offset_table.h
+index 3a2b530..9e9ecdf 100644
+--- a/base/allocator/partition_allocator/reservation_offset_table.h
++++ b/base/allocator/partition_allocator/reservation_offset_table.h
+@@ -8,6 +8,7 @@
+ #include <cstddef>
+ #include <cstdint>
+ #include <limits>
++#include <tuple>
+ 
+ #include "base/allocator/partition_allocator/address_pool_manager.h"
+ #include "base/allocator/partition_allocator/partition_address_space.h"
+-- 
+2.31.1
+
