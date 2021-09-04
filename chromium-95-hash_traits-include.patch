@@ -1,0 +1,30 @@
+From 45441a733187d7462f30b433a663ef7403990d87 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Fri, 3 Sep 2021 16:19:32 +0000
+Subject: [PATCH] IWYU: add string.h for memset in hash_traits
+
+---
+ third_party/blink/renderer/platform/wtf/hash_traits.h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/third_party/blink/renderer/platform/wtf/hash_traits.h b/third_party/blink/renderer/platform/wtf/hash_traits.h
+index ca5ed2a..67d1724 100644
+--- a/third_party/blink/renderer/platform/wtf/hash_traits.h
++++ b/third_party/blink/renderer/platform/wtf/hash_traits.h
+@@ -22,10 +22,13 @@
+ #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_TRAITS_H_
+ #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_TRAITS_H_
+ 
++#include <string.h>
++
+ #include <limits>
+ #include <memory>
+ #include <type_traits>
+ #include <utility>
++
+ #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+ #include "third_party/blink/renderer/platform/wtf/forward.h"
+ #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
+-- 
+2.32.0
+
