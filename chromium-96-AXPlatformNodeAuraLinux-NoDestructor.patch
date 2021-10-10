@@ -1,0 +1,29 @@
+From ec0ae698e17a70ee9a3aeb1c22915686dbde4733 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Wed, 6 Oct 2021 12:48:38 +0000
+Subject: [PATCH] GCC: fix brace-initialization with NoDestructor
+
+GCC requires brace-initialization for NoDestructor and std::vector<T>
+for base_types. Therefore change to double brace-initialzation.
+---
+ ui/accessibility/platform/ax_platform_node_auralinux.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/ui/accessibility/platform/ax_platform_node_auralinux.cc b/ui/accessibility/platform/ax_platform_node_auralinux.cc
+index aff693d..834c328 100644
+--- a/ui/accessibility/platform/ax_platform_node_auralinux.cc
++++ b/ui/accessibility/platform/ax_platform_node_auralinux.cc
+@@ -5136,8 +5136,8 @@ std::pair<int, int> AXPlatformNodeAuraLinux::GetSelectionOffsetsForAtk() {
+ std::vector<ax::mojom::Action> AXPlatformNodeAuraLinux::GetSupportedActions()
+     const {
+   static const base::NoDestructor<std::vector<ax::mojom::Action>>
+-      kActionsThatCanBeExposedViaAtkAction(
+-          {ax::mojom::Action::kDecrement, ax::mojom::Action::kIncrement});
++      kActionsThatCanBeExposedViaAtkAction{
++          {ax::mojom::Action::kDecrement, ax::mojom::Action::kIncrement}};
+ 
+   // The default action is always included and exposed at the first index.
+   std::vector<ax::mojom::Action> supported_actions = {
+-- 
+2.32.0
+

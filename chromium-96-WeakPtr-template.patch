@@ -1,0 +1,46 @@
+From bf9e3669ecad94467958309e9128da7bf799cfe5 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Thu, 30 Sep 2021 19:08:32 +0000
+Subject: [PATCH] GCC: fix non-template-friend function
+
+---
+ base/memory/safe_ref.h | 5 +++--
+ base/memory/weak_ptr.h | 5 +++--
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/base/memory/safe_ref.h b/base/memory/safe_ref.h
+index 7189f87..162c6744 100644
+--- a/base/memory/safe_ref.h
++++ b/base/memory/safe_ref.h
+@@ -88,9 +88,10 @@
+  private:
+   template <typename U>
+   friend class SafeRef;
+-  friend SafeRef internal::MakeSafeRefFromWeakPtrInternals(
++  template <typename U>
++  friend SafeRef<U> internal::MakeSafeRefFromWeakPtrInternals(
+       const internal::WeakReference& ref,
+-      T* ptr);
++      U* ptr);
+ 
+   // Construction from a from WeakPtr. Will CHECK() if the WeakPtr is already
+   // invalid.
+diff --git a/base/memory/weak_ptr.h b/base/memory/weak_ptr.h
+index 17f7b8f..d042ecf 100644
+--- a/base/memory/weak_ptr.h
++++ b/base/memory/weak_ptr.h
+@@ -289,9 +289,10 @@
+   template <typename U> friend class WeakPtr;
+   friend class SupportsWeakPtr<T>;
+   friend class WeakPtrFactory<T>;
+-  friend SafeRef<T> internal::MakeSafeRefFromWeakPtrInternals(
++  template <typename U>
++  friend SafeRef<U> internal::MakeSafeRefFromWeakPtrInternals(
+       const internal::WeakReference& ref,
+-      T* ptr);
++      U* ptr);
+ 
+   WeakPtr(const internal::WeakReference& ref, T* ptr)
+       : WeakPtrBase(ref, reinterpret_cast<uintptr_t>(ptr)) {}
+-- 
+2.32.0
