@@ -1,0 +1,65 @@
+From a5935eff52dcc65b02a49fb89aa2c9ec5ad3e4a6 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Wed, 1 Dec 2021 08:47:30 +0000
+Subject: [PATCH] GCC: remove constexpr to fix linker error
+
+---
+ .../allocator_shim_default_dispatch_to_partition_alloc.cc       | 2 +-
+ components/services/app_service/public/cpp/icon_types.cc        | 2 +-
+ content/browser/web_package/signed_exchange_prologue.cc         | 2 +-
+ device/bluetooth/bluetooth_adapter.cc                           | 2 +-
+ 4 files changed, 4 insertion(+), 4 deletion(-)
+
+diff --git a/base/allocator/allocator_shim_default_dispatch_to_partition_alloc.cc b/base/allocator/allocator_shim_default_dispatch_to_partition_alloc.cc
+index 80eb4b8..4707224 100644
+--- a/base/allocator/allocator_shim_default_dispatch_to_partition_alloc.cc
++++ b/base/allocator/allocator_shim_default_dispatch_to_partition_alloc.cc
+@@ -605,7 +605,7 @@ void ConfigurePartitionAlloc() {
+ }  // namespace allocator
+ }  // namespace base
+ 
+-constexpr AllocatorDispatch AllocatorDispatch::default_dispatch = {
++const AllocatorDispatch AllocatorDispatch::default_dispatch = {
+     &base::internal::PartitionMalloc,           // alloc_function
+     &base::internal::PartitionMallocUnchecked,  // alloc_unchecked_function
+     &base::internal::PartitionCalloc,    // alloc_zero_initialized_function
+diff --git a/components/services/app_service/public/cpp/icon_types.cc b/components/services/app_service/public/cpp/icon_types.cc
+index c857d15..292232e 100644
+--- a/components/services/app_service/public/cpp/icon_types.cc
++++ b/components/services/app_service/public/cpp/icon_types.cc
+@@ -21,7 +21,7 @@ bool IconKey::operator==(const IconKey& other) const {
+ }
+ 
+ constexpr uint64_t IconKey::kDoesNotChangeOverTime = 0;
+-constexpr int32_t IconKey::kInvalidResourceId = 0;
++const int32_t IconKey::kInvalidResourceId = 0;
+ 
+ IconValue::IconValue() = default;
+ IconValue::~IconValue() = default;
+diff --git a/content/browser/web_package/signed_exchange_prologue.cc b/content/browser/web_package/signed_exchange_prologue.cc
+index 9dfb4ac..a1f99eb 100644
+--- a/content/browser/web_package/signed_exchange_prologue.cc
++++ b/content/browser/web_package/signed_exchange_prologue.cc
+@@ -30,7 +30,7 @@ constexpr size_t kMaximumCBORHeaderLength = 512 * 1024;
+ 
+ namespace signed_exchange_prologue {
+ 
+-constexpr size_t BeforeFallbackUrl::kEncodedSizeInBytes =
++const size_t BeforeFallbackUrl::kEncodedSizeInBytes =
+     sizeof(kSignedExchangeMagic) + kFallbackUrlLengthFieldSizeInBytes;
+ 
+ size_t Parse2BytesEncodedLength(base::span<const uint8_t> input) {
+diff --git a/device/bluetooth/bluetooth_adapter.cc b/device/bluetooth/bluetooth_adapter.cc
+index ddde285..9c794c9 100644
+--- a/device/bluetooth/bluetooth_adapter.cc
++++ b/device/bluetooth/bluetooth_adapter.cc
+@@ -674,6 +674,6 @@ void BluetoothAdapter::RemoveTimedOutDevices() {
+ }
+ 
+ // static
+-constexpr base::TimeDelta BluetoothAdapter::timeoutSec = base::Seconds(180);
++const base::TimeDelta BluetoothAdapter::timeoutSec = base::Seconds(180);
+ 
+ }  // namespace device
+-- 
+2.32.0
