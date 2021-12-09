@@ -1,0 +1,45 @@
+From 4dfb826345e1e88f1242870c828948f2ef2f603a Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 4 Dec 2021 16:48:00 +0000
+Subject: [PATCH] GCC: add move constructor to base::Location
+
+GCC requires a noexcept move constructor in base::Location,
+because internal::PostedTask move constructor is noexcept.
+Otherwise it fails with:
+../../base/task/sequence_manager/tasks.cc:80:1: error: function
+ '...' defaulted on its redeclaration with an exception-specification
+ that differs from the implicit exception-specification ''
+   80 | PostedTask::PostedTask(PostedTask&& move_from) noexcept = default;
+      | ^~~~~~~~~~
+---
+ base/location.cc | 1 +
+ base/location.h  | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/base/location.cc b/base/location.cc
+index c0a2de0..144f247 100644
+--- a/base/location.cc
++++ b/base/location.cc
+@@ -74,6 +74,7 @@ static_assert(StrEndsWith(__FILE__, kStrippedPrefixLength, "base/location.cc"),
+ 
+ Location::Location() = default;
+ Location::Location(const Location& other) = default;
++Location::Location(Location&& other) noexcept = default;
+ Location& Location::operator=(const Location& other) = default;
+ 
+ Location::Location(const char* file_name, const void* program_counter)
+diff --git a/base/location.h b/base/location.h
+index 4c30d27..4461147 100644
+--- a/base/location.h
++++ b/base/location.h
+@@ -33,6 +33,7 @@ class BASE_EXPORT Location {
+  public:
+   Location();
+   Location(const Location& other);
++  Location(Location&& other) noexcept;
+   Location& operator=(const Location& other);
+ 
+   // Only initializes the file name and program counter, the source information
+-- 
+2.32.0
+
