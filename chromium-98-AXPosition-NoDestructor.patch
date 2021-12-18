@@ -1,0 +1,39 @@
+From c5269a685ba040ce9cfca7fc41c2eef447d939ac Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Thu, 9 Dec 2021 15:40:39 +0000
+Subject: [PATCH] GCC: fix brace-initialization with NoDestructor in
+ ui::AXPosition
+
+GCC requires brace-initialization for NoDestructor and std::vector<T>
+for base_types. Therefore change to double brace-initialzation.
+---
+ ui/accessibility/ax_position.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/ui/accessibility/ax_position.h b/ui/accessibility/ax_position.h
+index 186aba7..a66cecb 100644
+--- a/ui/accessibility/ax_position.h
++++ b/ui/accessibility/ax_position.h
+@@ -4324,7 +4324,7 @@ class AXPosition {
+       // Using braces ensures that the vector will contain the given value, and
+       // not create a vector of size 0.
+       static const base::NoDestructor<std::vector<int32_t>>
+-          embedded_word_starts({0});
++          embedded_word_starts{{0}};
+       return *embedded_word_starts;
+     }
+ 
+@@ -4353,8 +4353,8 @@ class AXPosition {
+     if (IsEmptyObjectReplacedByCharacter()) {
+       // Using braces ensures that the vector will contain the given value, and
+       // not create a vector of size 1.
+-      static const base::NoDestructor<std::vector<int32_t>> embedded_word_ends(
+-          {1});
++      static const base::NoDestructor<std::vector<int32_t>> embedded_word_ends{
++          {1}};
+       return *embedded_word_ends;
+     }
+ 
+-- 
+2.32.0
+
