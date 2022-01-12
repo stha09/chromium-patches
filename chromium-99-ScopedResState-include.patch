@@ -1,0 +1,24 @@
+From 3d6c4e79ea01a04528ed6953578b23c46abc2d20 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Thu, 16 Dec 2021 14:54:01 +0000
+Subject: [PATCH] IWYU: add cstring for memset in net::ScopedResState
+
+---
+ net/dns/public/scoped_res_state.cc | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/net/dns/public/scoped_res_state.cc b/net/dns/public/scoped_res_state.cc
+index 0ecaab2..ddfc2c9 100644
+--- a/net/dns/public/scoped_res_state.cc
++++ b/net/dns/public/scoped_res_state.cc
+@@ -4,6 +4,7 @@
+ 
+ #include "net/dns/public/scoped_res_state.h"
+ 
++#include <cstring>
+ #include <memory>
+ 
+ #include "base/check.h"
+-- 
+2.32.0
+
