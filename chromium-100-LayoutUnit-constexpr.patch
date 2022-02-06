@@ -1,0 +1,31 @@
+From 23384ca857117c7dff6627847638e0ab2b9a9e6c Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Tue, 25 Jan 2022 17:29:49 +0000
+Subject: [PATCH] GCC: default initialize member in blink::LayoutUnit
+ constructor
+
+Before C++20 the compiler is not required to check that members are
+initialized before use in constexpr constructors. However,
+expressions with undefined behaviour (e.g. due to unitialized data
+members) is prohibited for constexpr. Default initialize to
+value_ to 0 to workaround the problem.
+---
+ third_party/blink/renderer/platform/geometry/layout_unit.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/blink/renderer/platform/geometry/layout_unit.h b/third_party/blink/renderer/platform/geometry/layout_unit.h
+index e6cbe37..d1e4f07 100644
+--- a/third_party/blink/renderer/platform/geometry/layout_unit.h
++++ b/third_party/blink/renderer/platform/geometry/layout_unit.h
+@@ -95,7 +95,7 @@ class LayoutUnit {
+  public:
+   constexpr LayoutUnit() : value_(0) {}
+   template <typename IntegerType>
+-  constexpr explicit LayoutUnit(IntegerType value) {
++  constexpr explicit LayoutUnit(IntegerType value) : value_(0) {
+     if (std::is_signed<IntegerType>::value)
+       SaturatedSet(static_cast<int>(value));
+     else
+-- 
+2.34.1
+
