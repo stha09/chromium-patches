@@ -1,0 +1,49 @@
+From f5743bfaa6b02bc12d040a59f95bbe3abe7081d9 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 5 Mar 2022 08:40:55 +0000
+Subject: [PATCH] GCC: fix noexcept in AccountInfo
+
+Move constructor and move assignment operator for AccountInfo
+is marked noexcept. However, move constructor and assignment operator
+of member AccountCapabilities are not noexcept. Therefore, GCC fails to
+compile AccountInfo. Fix this by adding noexcept to move
+constructor and assignment operator of AccountCapabilities.
+---
+ .../signin/public/identity_manager/account_capabilities.cc    | 4 ++++
+ .../signin/public/identity_manager/account_capabilities.h     | 2 ++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/components/signin/public/identity_manager/account_capabilities.cc b/components/signin/public/identity_manager/account_capabilities.cc
+index 1fe703d..9005e94 100644
+--- a/components/signin/public/identity_manager/account_capabilities.cc
++++ b/components/signin/public/identity_manager/account_capabilities.cc
+@@ -16,8 +16,12 @@ AccountCapabilities::AccountCapabilities() = default;
+ AccountCapabilities::~AccountCapabilities() = default;
+ AccountCapabilities::AccountCapabilities(const AccountCapabilities& other) =
+     default;
++AccountCapabilities::AccountCapabilities(AccountCapabilities&& other) noexcept =
++    default;
+ AccountCapabilities& AccountCapabilities::operator=(
+     const AccountCapabilities& other) = default;
++AccountCapabilities& AccountCapabilities::operator=(
++    AccountCapabilities&& other) noexcept = default;
+ 
+ // static
+ const std::vector<std::string>&
+diff --git a/components/signin/public/identity_manager/account_capabilities.h b/components/signin/public/identity_manager/account_capabilities.h
+index a9f74c4..153ca4d 100644
+--- a/components/signin/public/identity_manager/account_capabilities.h
++++ b/components/signin/public/identity_manager/account_capabilities.h
+@@ -23,7 +23,9 @@ class AccountCapabilities {
+   AccountCapabilities();
+   ~AccountCapabilities();
+   AccountCapabilities(const AccountCapabilities& other);
++  AccountCapabilities(AccountCapabilities&& other) noexcept;
+   AccountCapabilities& operator=(const AccountCapabilities& other);
++  AccountCapabilities& operator=(AccountCapabilities&& other) noexcept;
+ 
+   // Chrome can offer extended promos for turning on Sync to accounts with this
+   // capability.
+-- 
+2.34.1
+

@@ -1,0 +1,39 @@
+From 75eba2ec2cdac35df97a2fd71a45ad3a929e4bde Mon Sep 17 00:00:00 2001
+From: Jose Dapena Paz <jdapena@igalia.com>
+Date: Thu, 03 Mar 2022 11:20:23 +0000
+Subject: [PATCH] GCC: use all brace-initializers for NoDestructor initialization
+
+AccountCapabilities kCapabilityNames initialization usage of
+NoDestructor fails to compile in GCC because it is ambiguous in GCC.
+To avoid ambiguity we can just use braces to initialize also
+NoDestructor.
+
+Fixes this build error:
+    ../../components/signin/public/identity_manager/account_capabilities.cc: In static member function ‘static const std::vector<std::__cxx11::basic_string<char> >& AccountCapabilities::GetSupportedAccountCapabilityNames()’:
+    ../../components/signin/public/identity_manager/account_capabilities.cc:26:56: error: call of overloaded ‘NoDestructor(<brace-enclosed initializer list>)’ is ambiguous
+       26 |       {kCanOfferExtendedChromeSyncPromosCapabilityName});
+          |                                                        ^
+
+Bug: 819294
+Change-Id: Icf4e1b69796f0c3d8951888a39eacac51b845106
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/3499101
+Reviewed-by: Sylvain Defresne <sdefresne@chromium.org>
+Commit-Queue: José Dapena Paz <jdapena@igalia.com>
+Cr-Commit-Position: refs/heads/main@{#977041}
+---
+
+diff --git a/components/signin/public/identity_manager/account_capabilities.cc b/components/signin/public/identity_manager/account_capabilities.cc
+index ef47e7f..1fe703d1 100644
+--- a/components/signin/public/identity_manager/account_capabilities.cc
++++ b/components/signin/public/identity_manager/account_capabilities.cc
+@@ -22,8 +22,8 @@
+ // static
+ const std::vector<std::string>&
+ AccountCapabilities::GetSupportedAccountCapabilityNames() {
+-  static base::NoDestructor<std::vector<std::string>> kCapabilityNames(
+-      {kCanOfferExtendedChromeSyncPromosCapabilityName});
++  static base::NoDestructor<std::vector<std::string>> kCapabilityNames{
++      {kCanOfferExtendedChromeSyncPromosCapabilityName}};
+   return *kCapabilityNames;
+ }
+ 
