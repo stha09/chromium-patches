@@ -1,0 +1,24 @@
+From 9dc94fd019392b15098e2be29f486311a9b7250b Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Wed, 6 Apr 2022 14:33:11 +0000
+Subject: [PATCH] IWYU: add memory for std::unique_ptr in view_utils
+
+---
+ chrome/browser/ui/views/passwords/views_utils.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/chrome/browser/ui/views/passwords/views_utils.h b/chrome/browser/ui/views/passwords/views_utils.h
+index e84ca92..41bd58a 100644
+--- a/chrome/browser/ui/views/passwords/views_utils.h
++++ b/chrome/browser/ui/views/passwords/views_utils.h
+@@ -5,6 +5,7 @@
+ #ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_VIEWS_UTILS_H_
+ #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_VIEWS_UTILS_H_
+ 
++#include <memory>
+ #include <string>
+ 
+ #include "base/callback_forward.h"
+-- 
+2.35.1
+
