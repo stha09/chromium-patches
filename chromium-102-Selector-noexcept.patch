@@ -1,0 +1,51 @@
+From 89ef96cdb7ed3d3a8bed5bf92dc315589e683550 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 9 Apr 2022 13:38:22 +0000
+Subject: [PATCH] libstdc++: add noexcept in autofill_assistant::Selector
+
+Make move constructor and move assignment operator noexcept,
+otherwise compile fails in BatchElementChecker::AddFieldValueCheck()
+with:
+  error: static assertion failed: result type must be constructible
+         from value type of input range
+---
+ components/autofill_assistant/browser/selector.cc | 4 ++--
+ components/autofill_assistant/browser/selector.h  | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/components/autofill_assistant/browser/selector.cc b/components/autofill_assistant/browser/selector.cc
+index 43a4d4f..d890c88 100644
+--- a/components/autofill_assistant/browser/selector.cc
++++ b/components/autofill_assistant/browser/selector.cc
+@@ -214,10 +214,10 @@ Selector::Selector(const SelectorProto& selector_proto)
+ 
+ Selector::~Selector() = default;
+ 
+-Selector::Selector(Selector&& other) = default;
++Selector::Selector(Selector&& other) noexcept = default;
+ Selector::Selector(const Selector& other) = default;
+ Selector& Selector::operator=(const Selector& other) = default;
+-Selector& Selector::operator=(Selector&& other) = default;
++Selector& Selector::operator=(Selector&& other) noexcept = default;
+ 
+ bool Selector::operator<(const Selector& other) const {
+   return proto.filters() < other.proto.filters();
+diff --git a/components/autofill_assistant/browser/selector.h b/components/autofill_assistant/browser/selector.h
+index 9733fe6..0adb510 100644
+--- a/components/autofill_assistant/browser/selector.h
++++ b/components/autofill_assistant/browser/selector.h
+@@ -36,9 +36,9 @@ struct Selector {
+   explicit Selector(const std::vector<std::string>& s)
+       : Selector(ToSelectorProto(s)) {}
+ 
+-  Selector(Selector&& other);
++  Selector(Selector&& other) noexcept;
+   Selector(const Selector& other);
+-  Selector& operator=(Selector&& other);
++  Selector& operator=(Selector&& other) noexcept;
+   Selector& operator=(const Selector& other);
+ 
+   bool operator<(const Selector& other) const;
+-- 
+2.35.1
+
