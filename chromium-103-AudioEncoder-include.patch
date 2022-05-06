@@ -1,0 +1,27 @@
+From a7e12f19797771873f4ef027a8326a3bcf9bdfb6 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Wed, 4 May 2022 11:48:07 +0000
+Subject: [PATCH] libstdc++: fix incomplete type of media::AudioEncoder
+
+Destructor of std::unique_ptr in libstdc++ uses sizeof() which
+requires full definition of media::AudioEncoder for return type of
+media::CreatePlatformAudioEncoder().
+---
+ media/mojo/services/gpu_mojo_media_client_cros.cc | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/media/mojo/services/gpu_mojo_media_client_cros.cc b/media/mojo/services/gpu_mojo_media_client_cros.cc
+index 5c987c3..c9c2652 100644
+--- a/media/mojo/services/gpu_mojo_media_client_cros.cc
++++ b/media/mojo/services/gpu_mojo_media_client_cros.cc
+@@ -7,6 +7,7 @@
+ #include "base/metrics/histogram_functions.h"
+ #include "build/build_config.h"
+ #include "media/base/audio_decoder.h"
++#include "media/base/audio_encoder.h"
+ #include "media/base/media_switches.h"
+ #include "media/gpu/chromeos/mailbox_video_frame_converter.h"
+ #include "media/gpu/chromeos/platform_video_frame_pool.h"
+-- 
+2.35.1
+
