@@ -1,0 +1,35 @@
+From efc07cc9dc7d1185af21a3f0264b513ab2863cac Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Thu, 29 Sep 2022 18:50:53 +0000
+Subject: [PATCH] GCC: remove redundant template parameter
+
+GCC 12 does not allow it in C++20 mode anymore.
+---
+ .../crashpad/crashpad/snapshot/elf/elf_image_reader.cc      | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/third_party/crashpad/crashpad/snapshot/elf/elf_image_reader.cc b/third_party/crashpad/crashpad/snapshot/elf/elf_image_reader.cc
+index 9d3ba43..30e8b98 100644
+--- a/third_party/crashpad/crashpad/snapshot/elf/elf_image_reader.cc
++++ b/third_party/crashpad/crashpad/snapshot/elf/elf_image_reader.cc
+@@ -56,14 +56,14 @@ template <typename PhdrType>
+ class ElfImageReader::ProgramHeaderTableSpecific
+     : public ElfImageReader::ProgramHeaderTable {
+  public:
+-  ProgramHeaderTableSpecific<PhdrType>() {}
++  ProgramHeaderTableSpecific() {}
+ 
+-  ProgramHeaderTableSpecific<PhdrType>(
++  ProgramHeaderTableSpecific(
+       const ProgramHeaderTableSpecific<PhdrType>&) = delete;
+   ProgramHeaderTableSpecific<PhdrType>& operator=(
+       const ProgramHeaderTableSpecific<PhdrType>&) = delete;
+ 
+-  ~ProgramHeaderTableSpecific<PhdrType>() {}
++  ~ProgramHeaderTableSpecific() {}
+ 
+   bool Initialize(const ProcessMemoryRange& memory,
+                   VMAddress address,
+-- 
+2.35.1
+
