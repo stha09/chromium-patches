@@ -1,0 +1,41 @@
+From 3e1e86ac882ae0ce4b9ec50834a4ff8becd912ab Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Mon, 19 Dec 2022 16:59:46 +0000
+Subject: [PATCH] GCC: move pragmas in blink::CanvasResourceProvider
+
+GCC does not allow using #pragma inside an enum.
+
+Bug: 819294
+Change-Id: I637b5a616b080d17bb719aae9ec8cf06d0f8c464
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/4111848
+Reviewed-by: Stephen Chenney <schenney@chromium.org>
+Commit-Queue: Stephan Hartmann <stha09@googlemail.com>
+Cr-Commit-Position: refs/heads/main@{#1084983}
+---
+
+diff --git a/third_party/blink/renderer/platform/graphics/canvas_resource_provider.h b/third_party/blink/renderer/platform/graphics/canvas_resource_provider.h
+index e898397f..214ab01 100644
+--- a/third_party/blink/renderer/platform/graphics/canvas_resource_provider.h
++++ b/third_party/blink/renderer/platform/graphics/canvas_resource_provider.h
+@@ -68,6 +68,8 @@
+  public:
+   // These values are persisted to logs. Entries should not be renumbered and
+   // numeric values should never be reused.
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+   enum ResourceProviderType {
+     kTexture [[deprecated]] = 0,
+     kBitmap = 1,
+@@ -79,11 +81,9 @@
+     kPassThrough = 7,
+     kSwapChain = 8,
+     kSkiaDawnSharedImage [[deprecated]] = 9,
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+     kMaxValue = kSkiaDawnSharedImage,
+-#pragma GCC diagnostic pop
+   };
++#pragma GCC diagnostic pop
+ 
+   // The following parameters attempt to reach a compromise between not flushing
+   // too often, and not accumulating an unreasonable backlog.  Flushing too

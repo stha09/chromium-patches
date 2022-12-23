@@ -1,0 +1,48 @@
+From f7ab0bf4e48ea6de55ffb3e45e6210fdbf1b1ed6 Mon Sep 17 00:00:00 2001
+From: Ivan Murashov <ivan.murashov@lge.com>
+Date: Wed, 14 Dec 2022 16:18:35 +0000
+Subject: [PATCH] libstdc++: Use pow() from std in XYZD50ToLab()
+
+Otherwise build fails when building with use_custom_libcxx=false.
+The error example:
+ui/gfx/color_conversions.cc:251:7: error:
+return type 'double' must match previous return type 'float'
+when lambda expression has unspecified explicit return type
+
+Bug: 957519
+Change-Id: I2511765b914757601f0a99eaeae09bcb396cd573
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/4106450
+Reviewed-by: Juanmi Huertas <juanmihd@chromium.org>
+Commit-Queue: Juanmi Huertas <juanmihd@chromium.org>
+Cr-Commit-Position: refs/heads/main@{#1083133}
+---
+
+diff --git a/ui/gfx/color_conversions.cc b/ui/gfx/color_conversions.cc
+index 449c4b99..52d0761 100644
+--- a/ui/gfx/color_conversions.cc
++++ b/ui/gfx/color_conversions.cc
+@@ -4,6 +4,8 @@
+ 
+ #include "ui/gfx/color_conversions.h"
+ 
++#include <cmath>
++
+ #include "skia/ext/skcolorspace_primaries.h"
+ #include "skia/ext/skcolorspace_trfn.h"
+ #include "third_party/skia/include/core/SkColorSpace.h"
+@@ -248,7 +250,7 @@
+     if (t <= delta_limit)
+       return (841.0f / 108.0f) * t + (16.0f / 116.0f);
+     else
+-      return pow(t, 1.0f / 3.0f);
++      return std::pow(t, 1.0f / 3.0f);
+   };
+ 
+   x = LabTransferFunction(x / kD50_x);
+@@ -567,4 +569,4 @@
+ 
+   return result;
+ }
+-}  // namespace gfx
+\ No newline at end of file
++}  // namespace gfx

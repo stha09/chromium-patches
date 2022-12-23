@@ -1,0 +1,34 @@
+From 740d1102e3fdaaed5441b5656205df9d7e422c3a Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Tue, 20 Dec 2022 20:41:12 +0000
+Subject: [PATCH] GCC: add cast for vector types in url/url_canon_internal.cc
+
+GCC requires lax vector conversion for converting __vector(16) to
+SIMD types. Add explicit cast instead.
+
+Bug: 819294
+Change-Id: Icfc9d3586350af469bfd9d83b355d94806430c43
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/4110786
+Commit-Queue: Stephan Hartmann <stha09@googlemail.com>
+Reviewed-by: Daniel Cheng <dcheng@chromium.org>
+Cr-Commit-Position: refs/heads/main@{#1085617}
+---
+
+diff --git a/url/url_canon_internal.cc b/url/url_canon_internal.cc
+index e4f7949..f621920 100644
+--- a/url/url_canon_internal.cc
++++ b/url/url_canon_internal.cc
+@@ -49,11 +49,11 @@
+     auto mask = b >= 0x24 && b <= 0x7e && b != 0x27 && b != 0x3c && b != 0x3e;
+ 
+ #ifdef __SSE2__
+-    if (_mm_movemask_epi8(mask) != 0xffff) {
++    if (_mm_movemask_epi8(reinterpret_cast<__m128i>(mask)) != 0xffff) {
+       return i;
+     }
+ #else
+-    if (vminvq_u8(mask) == 0) {
++    if (vminvq_u8(reinterpret_cast<uint8x16_t>(mask)) == 0) {
+       return i;
+     }
+ #endif
