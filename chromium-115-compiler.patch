@@ -1,17 +1,17 @@
-From 307a0f63dd9b118f4b8470ed3d7567e81fdb7a6d Mon Sep 17 00:00:00 2001
-From: Mike Gilbert <floppym@gentoo.org>
-Date: Wed, 10 May 2023 07:51:41 +0000
-Subject: [PATCH] Disable various compiler configs
+From bd44b9612dba45ac02550330d5f38973de5d9c9d Mon Sep 17 00:00:00 2001
+From: root <root@example.org>
+Date: Thu, 15 Jun 2023 20:11:17 +0000
+Subject: [PATCH] foo
 
 ---
- build/config/compiler/BUILD.gn | 134 +++++----------------------------
- 1 file changed, 17 insertions(+), 117 deletions(-)
+ build/config/compiler/BUILD.gn | 142 ++++-----------------------------
+ 1 file changed, 17 insertions(+), 125 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index fb272c0..63940cc 100644
+index 23a8da4..87b8b57 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -297,9 +297,7 @@ config("compiler") {
+@@ -302,9 +302,7 @@ config("compiler") {
  
    configs += [
      # See the definitions below.
@@ -21,7 +21,7 @@ index fb272c0..63940cc 100644
      ":compiler_codegen",
      ":compiler_deterministic",
    ]
-@@ -567,37 +565,6 @@ config("compiler") {
+@@ -572,37 +570,6 @@ config("compiler") {
      ldflags += [ "-Wl,-z,keep-text-section-prefix" ]
    }
  
@@ -59,7 +59,22 @@ index fb272c0..63940cc 100644
    # C11/C++11 compiler flags setup.
    # ---------------------------
    if (is_linux || is_chromeos || is_android || (is_nacl && is_clang) ||
-@@ -1394,46 +1361,6 @@ config("compiler_deterministic") {
+@@ -756,14 +723,6 @@ config("compiler") {
+       }
+ 
+       ldflags += [ "-Wl,-mllvm,-import-instr-limit=$import_instr_limit" ]
+-
+-      if (!is_chromeos) {
+-        # TODO(https://crbug.com/972449): turn on for ChromeOS when that
+-        # toolchain has this flag.
+-        # We only use one version of LLVM within a build so there's no need to
+-        # upgrade debug info, which can be expensive since it runs the verifier.
+-        ldflags += [ "-Wl,-mllvm,-disable-auto-upgrade-debug-info" ]
+-      }
+     }
+ 
+     # TODO(https://crbug.com/1211155): investigate why this isn't effective on
+@@ -1438,46 +1397,6 @@ config("compiler_deterministic") {
      }
    }
  
@@ -106,7 +121,7 @@ index fb272c0..63940cc 100644
    # Tells the compiler not to use absolute paths when passing the default
    # paths to the tools it invokes. We don't want this because we don't
    # really need it and it can mess up the goma cache entries.
-@@ -1452,27 +1379,6 @@ config("compiler_deterministic") {
+@@ -1496,27 +1415,6 @@ config("compiler_deterministic") {
    }
  }
  
@@ -134,7 +149,7 @@ index fb272c0..63940cc 100644
  config("rustc_revision") {
    if (rustc_revision != "") {
      # Similar to the above config, this is here so that all files get recompiled
-@@ -1762,7 +1668,7 @@ config("chromium_code") {
+@@ -1806,7 +1704,7 @@ config("chromium_code") {
        defines = [ "_HAS_NODISCARD" ]
      }
    } else {
@@ -143,7 +158,7 @@ index fb272c0..63940cc 100644
      if (treat_warnings_as_errors) {
        cflags += [ "-Werror" ]
  
-@@ -1771,10 +1677,6 @@ config("chromium_code") {
+@@ -1815,10 +1713,6 @@ config("chromium_code") {
        # well.
        ldflags = [ "-Werror" ]
      }
@@ -154,7 +169,7 @@ index fb272c0..63940cc 100644
  
      if (treat_warnings_as_errors) {
        # Turn rustc warnings into the "deny" lint level, which produce compiler
-@@ -1792,16 +1694,6 @@ config("chromium_code") {
+@@ -1836,16 +1730,6 @@ config("chromium_code") {
        "__STDC_FORMAT_MACROS",
      ]
  
@@ -171,7 +186,7 @@ index fb272c0..63940cc 100644
      if (is_apple) {
        cflags_objc = [ "-Wimplicit-retain-self" ]
        cflags_objcc = [ "-Wimplicit-retain-self" ]
-@@ -2166,7 +2058,8 @@ config("default_stack_frames") {
+@@ -2210,7 +2094,8 @@ config("default_stack_frames") {
  }
  
  # Default "optimization on" config.
@@ -181,7 +196,7 @@ index fb272c0..63940cc 100644
    if (is_win) {
      if (chrome_pgo_phase != 2) {
        # Favor size over speed, /O1 must be before the common flags.
-@@ -2225,7 +2118,8 @@ config("optimize") {
+@@ -2269,7 +2154,8 @@ config("optimize") {
  }
  
  # Turn off optimizations.
@@ -191,7 +206,7 @@ index fb272c0..63940cc 100644
    if (is_win) {
      cflags = [
        "/Od",  # Disable optimization.
-@@ -2265,7 +2159,8 @@ config("no_optimize") {
+@@ -2309,7 +2195,8 @@ config("no_optimize") {
  # Turns up the optimization level. On Windows, this implies whole program
  # optimization and link-time code generation which is very expensive and should
  # be used sparingly.
@@ -201,7 +216,7 @@ index fb272c0..63940cc 100644
    if (is_nacl && is_nacl_irt) {
      # The NaCl IRT is a special case and always wants its own config.
      # Various components do:
-@@ -2298,7 +2193,8 @@ config("optimize_max") {
+@@ -2342,7 +2229,8 @@ config("optimize_max") {
  #
  # TODO(crbug.com/621335) - rework how all of these configs are related
  # so that we don't need this disclaimer.
@@ -211,7 +226,7 @@ index fb272c0..63940cc 100644
    if (is_nacl && is_nacl_irt) {
      # The NaCl IRT is a special case and always wants its own config.
      # Various components do:
-@@ -2324,7 +2220,8 @@ config("optimize_speed") {
+@@ -2368,7 +2256,8 @@ config("optimize_speed") {
    }
  }
  
@@ -221,7 +236,7 @@ index fb272c0..63940cc 100644
    cflags = [ "-O1" ] + common_optimize_on_cflags
    rustflags = [ "-Copt-level=1" ]
    ldflags = common_optimize_on_ldflags
-@@ -2449,7 +2346,8 @@ config("win_pdbaltpath") {
+@@ -2493,7 +2382,8 @@ config("win_pdbaltpath") {
  }
  
  # Full symbols.
@@ -231,7 +246,7 @@ index fb272c0..63940cc 100644
    rustflags = []
    if (is_win) {
      if (is_clang) {
-@@ -2592,7 +2490,8 @@ config("symbols") {
+@@ -2636,7 +2526,8 @@ config("symbols") {
  # Minimal symbols.
  # This config guarantees to hold symbol for stack trace which are shown to user
  # when crash happens in unittests running on buildbot.
@@ -241,7 +256,7 @@ index fb272c0..63940cc 100644
    rustflags = []
    if (is_win) {
      # Functions, files, and line tables only.
-@@ -2670,7 +2569,8 @@ config("minimal_symbols") {
+@@ -2721,7 +2612,8 @@ config("minimal_symbols") {
  # This configuration contains function names only. That is, the compiler is
  # told to not generate debug information and the linker then just puts function
  # names in the final debug information.
