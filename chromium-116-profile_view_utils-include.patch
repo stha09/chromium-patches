@@ -1,0 +1,26 @@
+From a818a8afbb4e21efb3f261543ccd83081fc30636 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Fri, 23 Jun 2023 23:57:28 +0000
+Subject: [PATCH] IWYU: add vector for std::vector in profile_view_utils
+
+Bug: 957519
+Change-Id: I7d720a44deeb4743ecb4abeef11f841cc39249c4
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/4628731
+Auto-Submit: Stephan Hartmann <stha09@googlemail.com>
+Commit-Queue: Peter Kasting <pkasting@chromium.org>
+Reviewed-by: Peter Kasting <pkasting@chromium.org>
+Cr-Commit-Position: refs/heads/main@{#1162011}
+---
+
+diff --git a/chrome/browser/ui/profile_view_utils.h b/chrome/browser/ui/profile_view_utils.h
+index 4aa53f0..5a7250f 100644
+--- a/chrome/browser/ui/profile_view_utils.h
++++ b/chrome/browser/ui/profile_view_utils.h
+@@ -7,6 +7,7 @@
+ 
+ #include <string>
+ #include <utility>
++#include <vector>
+ 
+ class Profile;
+ class ProfileAttributesEntry;

@@ -1,0 +1,26 @@
+From 6ab6fdfe3d403b6917069957c707e6822b873962 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Wed, 21 Jun 2023 11:16:26 +0000
+Subject: [PATCH] IWYU: add variant for std::variant in object_paint_properties_sparse
+
+Bug: 957519
+Change-Id: I04677f8837ab7c6d78497e266a5af135b40ea0ba
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/4628513
+Commit-Queue: Fredrik Söderquist <fs@opera.com>
+Auto-Submit: Stephan Hartmann <stha09@googlemail.com>
+Reviewed-by: Fredrik Söderquist <fs@opera.com>
+Cr-Commit-Position: refs/heads/main@{#1160564}
+---
+
+diff --git a/third_party/blink/renderer/core/paint/object_paint_properties_sparse.h b/third_party/blink/renderer/core/paint/object_paint_properties_sparse.h
+index 8bb1639..79c60fe 100644
+--- a/third_party/blink/renderer/core/paint/object_paint_properties_sparse.h
++++ b/third_party/blink/renderer/core/paint/object_paint_properties_sparse.h
+@@ -8,6 +8,7 @@
+ #include <array>
+ #include <memory>
+ #include <utility>
++#include <variant>
+ 
+ #include "base/dcheck_is_on.h"
+ #include "base/memory/ptr_util.h"
